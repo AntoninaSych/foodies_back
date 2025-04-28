@@ -36,7 +36,6 @@ app.use('/api/recipes', recipesRouter);
 app.use('/api/testimonials', testimonialsRouter);
 app.use('/api/auth', authRouter);
 
-// Swagger
 const swaggerOptions = {
     definition: {
         openapi: '3.0.0',

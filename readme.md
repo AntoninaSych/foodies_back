@@ -4,6 +4,9 @@
    - ```docker compose up```
    - ```npm install -g nodemon```
    - ```npm run dev```
+   - ```npm run db:reset```
+4. Also available commads:
    - ```npx sequelize-cli db:migrate```
    - ```npx sequelize-cli db:seed:undo:all```
-4. Swagger Documentation http://localhost:5001/api-docs/
+   - ```npx sequelize-cli db:seed:all```
+5Swagger Documentation http://localhost:5001/api-docs/

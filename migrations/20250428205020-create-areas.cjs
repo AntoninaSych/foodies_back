@@ -11,6 +11,17 @@ module.exports = {
       name: {
         type: Sequelize.STRING,
         allowNull: false,
+        unique: true, // 🔥 Название области должно быть уникальным
+      },
+      createdAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.fn('NOW'), // 🔥 по умолчанию текущая дата
+      },
+      updatedAt: {
+        allowNull: false,
+        type: Sequelize.DATE,
+        defaultValue: Sequelize.fn('NOW'), // 🔥 по умолчанию текущая дата
       },
     });
   },

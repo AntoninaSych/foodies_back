@@ -19,10 +19,6 @@ Recipe.belongsToMany(Ingredient, { through: RecipeIngredient, foreignKey: 'recip
 Ingredient.belongsToMany(Recipe, { through: RecipeIngredient, foreignKey: 'ingredientId', otherKey: 'recipeId' });
 
 
-User.hasMany(Testimonial, { foreignKey: 'userId', as: 'testimonials' });
-Testimonial.belongsTo(User, { foreignKey: 'userId', as: 'author' });
-
-
 export {
   sequelize,
   User,

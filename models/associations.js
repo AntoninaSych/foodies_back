@@ -1,4 +1,3 @@
-// models/associations.js
 import Area from './Area.js';
 import Recipe from './Recipe.js';
 import User from './User.js';

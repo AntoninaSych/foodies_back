@@ -39,6 +39,15 @@ app.use('/api/auth', authRouter);
 const swaggerOptions = {
     definition: {
         openapi: '3.0.0',
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: 'http',
+                    scheme: 'bearer',
+                    bearerFormat: 'JWT',
+                },
+            },
+        },
         info: {
             title: 'Foodies API',
             version: '1.0.0',

@@ -11,15 +11,23 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    avatar: {
-        type: DataTypes.STRING,
-        allowNull: true,
-    },
     email: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-    }
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    avatarURL: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    token: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
 }, {
     timestamps: true,
     tableName: 'users',

@@ -32,9 +32,12 @@ const __dirname = path.dirname(__filename);
  *           schema:
  *             type: object
  *             required:
+ *               - name
  *               - email
  *               - password
  *             properties:
+ *               name:
+ *                 type: string
  *               email:
  *                 type: string
  *               password:
@@ -92,12 +95,23 @@ router.post('/login', login);
  *     responses:
  *       200:
  *         description: Current user data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 avatarURL:
+ *                   type: string
  *       401:
  *         description: Unauthorized
  */
 router.get('/current', auth, async (req, res) => {
-    const { email, subscription } = req.user;
-    res.status(200).json({ email, subscription });
+    const { email, name, avatarURL } = req.user;
+    res.status(200).json({ email, name, avatarURL });
 });
 
 /**
@@ -120,60 +134,6 @@ router.post('/logout', auth, async (req, res, next) => {
         res.status(204).send();
     } catch (err) {
         next(err);
-    }
-});
-
-/**
- * @swagger
- * /api/auth/subscription:
- *   patch:
- *     summary: Update user subscription
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - subscription
- *             properties:
- *               subscription:
- *                 type: string
- *                 enum: [starter, pro, business]
- *     responses:
- *       200:
- *         description: Subscription updated
- *       400:
- *         description: Invalid subscription type
- *       401:
- *         description: Unauthorized
- */
-router.patch('/subscription', auth, async (req, res, next) => {
-    try {
-        const { subscription } = req.body;
-        const allowed = ['starter', 'pro', 'business'];
-
-        if (!allowed.includes(subscription)) {
-            return res.status(400).json({ message: 'Invalid subscription type' });
-        }
-
-        const user = await User.findByPk(req.user.id);
-        if (!user) {
-            return res.status(401).json({ message: 'Not authorized' });
-        }
-
-        user.subscription = subscription;
-        await user.save();
-
-        res.status(200).json({
-            email: user.email,
-            subscription: user.subscription,
-        });
-    } catch (error) {
-        next(error);
     }
 });
 
@@ -202,6 +162,13 @@ router.patch('/subscription', auth, async (req, res, next) => {
  *     responses:
  *       200:
  *         description: Avatar updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 avatarURL:
+ *                   type: string
  *       400:
  *         description: File upload error
  *       401:

@@ -1,32 +1,27 @@
 'use strict';
 
-const users = require('../db/source/users.json');
 const { v4: uuidv4 } = require('uuid');
-const fs = require('fs');
-const path = require('path');
+const bcrypt = require('bcryptjs');
 
 module.exports = {
   async up(queryInterface) {
-    const idMap = {}; // сопоставление старого Mongo id -> нового UUID
-    const usersData = users.map(user => {
-      const newId = uuidv4();
-      idMap[user._id.$oid] = newId;
-      return {
-        id: newId,
-        name: user.name,
-        avatar: user.avatar || null,
-        email: user.email,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-    });
-    const mapPath = path.join(__dirname, '../db/source/usersIdMap.json');
-    fs.writeFileSync(mapPath, JSON.stringify(idMap, null, 2));
+    const hashedPassword = await bcrypt.hash('password123', 10);
 
-    await queryInterface.bulkInsert('users', usersData, {});
+    const user = {
+      id: uuidv4(),
+      name: 'Foodies Admin',
+      email: 'admin@foodies.com',
+      password: hashedPassword,
+      avatarURL: null,
+      token: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await queryInterface.bulkInsert('users', [user], {});
   },
 
   async down(queryInterface) {
-    await queryInterface.bulkDelete('users', null, {});
+    await queryInterface.bulkDelete('users', { email: 'admin@foodies.com' }, {});
   }
 };

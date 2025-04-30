@@ -33,6 +33,6 @@ const router = Router();
  *                     type: string
  */
 
-router.get('/', auth, getAllTestimonials);
+router.get('/', getAllTestimonials);
 
 export default router;

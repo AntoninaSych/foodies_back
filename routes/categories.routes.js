@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getAllCategories } from '../controllers/categories.controller.js';
+import auth from '../middlewares/auth.js';
 
 const router = Router();
 

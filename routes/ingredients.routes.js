@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getAllIngredients } from '../controllers/ingredients.controller.js';
+import auth from '../middlewares/auth.js';
 
 const router = Router();
 

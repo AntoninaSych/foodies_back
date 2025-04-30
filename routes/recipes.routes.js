@@ -1,6 +1,7 @@
 // routes/recipes.routes.js
 import { Router } from 'express';
 import { getAllRecipes } from '../controllers/recipes.controller.js';
+import auth from '../middlewares/auth.js';
 
 const router = Router();
 

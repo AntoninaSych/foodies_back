@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "deploy": "npm install && npm run db:reset && node server.js",
+    "build": "npm run db:reset",
     "dev": "nodemon server.js",
     "db:reset": "npx sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all",
     "test": "jest"

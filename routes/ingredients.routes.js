@@ -36,6 +36,6 @@ const router = Router();
  *                     type: string
  */
 
-router.get('/', getAllIngredients);
+router.get('/', auth, getAllIngredients);
 
 export default router;

@@ -1,15 +1,16 @@
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import configFile from '../config/config.js'; // путь проверь по проекту
+
 dotenv.config();
 
-const sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASSWORD,
+const env = process.env.NODE_ENV || 'development';
+const config = configFile[env];
 
-    {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
+let sequelize;
+
+if (config.use_env_variable) {
+    sequelize = new Sequelize(process.env[config.use_env_variable], {
         dialect: 'postgres',
         dialectOptions: {
             ssl: {
@@ -17,9 +18,20 @@ const sequelize = new Sequelize(
                 rejectUnauthorized: false,
             },
         },
-        logging: false,
-    }
-);
+    });
+} else {
+    sequelize = new Sequelize(
+        config.database,
+        config.username,
+        config.password,
+        {
+            host: config.host,
+            port: config.port,
+            dialect: config.dialect,
+            dialectOptions: config.dialectOptions,
+        }
+    );
+}
 
 export const connectDB = async () => {
     try {

@@ -5,7 +5,7 @@ node_modules/
 /migrations/*.js~
 /seeders/*.js~
 /models/*.js~
-
+/db/source/usersIdMap.json
 
 *.sqlite
 *.db

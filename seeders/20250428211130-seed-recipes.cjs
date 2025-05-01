@@ -12,13 +12,11 @@ async function downloadImage(url, filename) {
   const localDirPath = path.resolve(__dirname, '../public/images/recipies');
   const filePath = path.join(localDirPath, filename);
 
-  // Ensure the images directory exists
   if (!fs.existsSync(localDirPath)) {
     fs.mkdirSync(localDirPath, { recursive: true });
     console.log('📁 Created images directory:', localDirPath);
   }
 
-  // If file already exists – skip downloading
   if (fs.existsSync(filePath)) {
     console.log(`⚠️ Skipped download (already exists): ${filename}`);
     return `images/recipies/${filename}`;
@@ -86,8 +84,6 @@ module.exports = {
     const recipesData = [];
 
     for (const recipe of recipesDataRaw) {
-    const recipesData = [];
-    for (const recipe of recipesDataRaw) {
       const id = uuidv4();
 
       const areaId = recipe.area
@@ -105,12 +101,6 @@ module.exports = {
 
       insertedIds.push(id);
 
-      let areaId = null;
-      if (recipe.area) {
-        const areaNameLower = recipe.area.toLowerCase().trim();
-        areaId = areaMap[areaNameLower] || null;
-      }
-
       let localThumbPath = null;
       if (recipe.thumb) {
         try {
@@ -121,7 +111,6 @@ module.exports = {
         }
       }
 
-      recipesData.push({
       recipesData.push({
         id,
         title: recipe.title,
@@ -140,8 +129,6 @@ module.exports = {
     if (recipesData.length === 0) {
       console.warn('⚠️ No valid recipes to insert.');
       return;
-    }
-      });
     }
 
     await queryInterface.bulkInsert('recipes', recipesData, {});

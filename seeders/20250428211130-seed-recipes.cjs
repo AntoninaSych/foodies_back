@@ -9,26 +9,45 @@ const axios = require('axios');
 let insertedIds = [];
 
 async function downloadImage(url, filename) {
-  const localDirPath = path.resolve(__dirname, '../public/images');
+  const localDirPath = path.resolve(__dirname, '../public/images/recipies');
   const filePath = path.join(localDirPath, filename);
-
-  const response = await axios({
-    url,
-    method: 'GET',
-    responseType: 'stream'
-  });
 
   // Ensure the images directory exists
   if (!fs.existsSync(localDirPath)) {
     fs.mkdirSync(localDirPath, { recursive: true });
+    console.log('📁 Created images directory:', localDirPath);
   }
 
-  return new Promise((resolve, reject) => {
-    const writer = fs.createWriteStream(filePath);
-    response.data.pipe(writer);
-    writer.on('finish', () => resolve(`images/${filename}`));
-    writer.on('error', reject);
-  });
+  // If file already exists – skip downloading
+  if (fs.existsSync(filePath)) {
+    console.log(`⚠️ Skipped download (already exists): ${filename}`);
+    return `images/recipies/${filename}`;
+  }
+
+  try {
+    const response = await axios({
+      url,
+      method: 'GET',
+      responseType: 'stream',
+      timeout: 10000
+    });
+
+    return new Promise((resolve, reject) => {
+      const writer = fs.createWriteStream(filePath);
+      response.data.pipe(writer);
+      writer.on('finish', () => {
+        console.log(`✅ Downloaded: ${filename}`);
+        resolve(`images/recipies/${filename}`);
+      });
+      writer.on('error', err => {
+        console.error('❌ Error writing file:', err.message);
+        reject(err);
+      });
+    });
+  } catch (error) {
+    console.error(`❌ Failed to download ${url}:`, error.message);
+    return null;
+  }
 }
 
 module.exports = {
@@ -71,7 +90,7 @@ module.exports = {
           const fileName = path.basename(new URL(recipe.thumb).pathname);
           localThumbPath = await downloadImage(recipe.thumb, fileName);
         } catch (err) {
-          console.warn(`⚠️ Failed to download image: ${recipe.thumb}`, err.message);
+          console.warn(`⚠️ Failed to handle image: ${recipe.thumb}`, err.message);
         }
       }
 
@@ -90,6 +109,7 @@ module.exports = {
     }
 
     await queryInterface.bulkInsert('recipes', recipesData, {});
+    console.log('✅ Seeding completed');
   },
 
   async down(queryInterface) {
@@ -97,6 +117,7 @@ module.exports = {
       await queryInterface.bulkDelete('recipes', {
         id: insertedIds,
       });
+      console.log('🗑️ Recipes deleted');
     }
   }
 };

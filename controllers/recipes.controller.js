@@ -54,9 +54,14 @@ export const getRecipeById = async (req, res, next) => {
                     attributes: ['id', 'name', 'email'],
                 },
                 {
+                    model: Category,
+                    as: 'category',
+                    attributes: ['id', 'name', 'thumb'],
+                },
+                {
                     model: Ingredient,
-                    attributes: ['id', 'name'],
-                    through: { attributes: [] },
+                    attributes: ['id', 'name', 'thumb'],
+                    through: { attributes: ['measure'] }, // ✅ measure включено
                 },
             ],
         });

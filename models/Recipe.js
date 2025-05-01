@@ -50,6 +50,16 @@ const Recipe = sequelize.define('Recipe', {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     },
+    categoryId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+            model: 'categories',
+            key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+    },
 }, {
     timestamps: true,
     tableName: 'recipes',

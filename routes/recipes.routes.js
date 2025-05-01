@@ -1,6 +1,7 @@
-// routes/recipes.routes.js
+import auth from '../middlewares/auth.js';
 import { Router } from 'express';
-import { getAllRecipes, getRecipeById } from '../controllers/recipes.controller.js';
+import { getAllRecipes, getRecipeById, createRecipe } from '../controllers/recipes.controller.js';
+import upload from '../middlewares/upload.js';
 
 const router = Router();
 
@@ -187,5 +188,76 @@ router.get('/', getAllRecipes);
  *                   example: "Something went wrong"
  */
 router.get('/:id', getRecipeById);
+
+/**
+ * @swagger
+ * /api/recipes:
+ *   post:
+ *     summary: Create a new recipe
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - categoryId
+ *               - ingredients
+ *               - areaId
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Avocado Toast"
+ *               description:
+ *                 type: string
+ *                 example: "Tasty and healthy toast with avocado and egg"
+ *               instructions:
+ *                 type: string
+ *                 example: "Toast bread, mash avocado, poach egg, combine"
+ *               time:
+ *                 type: string
+ *                 example: "10 min"
+ *               categoryId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6"
+ *               areaId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "d4c3b2a1-f6e5-d7c8-b9a0-j1k2l3m4n5o6"
+ *               ingredients:
+ *                 type: string
+ *                 description: JSON.stringify array of ingredient objects with id and measure
+ *                 example: '[{"id": "abc-123", "measure": "1 tsp"}, {"id": "def-456", "measure": "200g"}]'
+ *               thumb:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Recipe created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Recipe created successfully"
+ *                 recipeId:
+ *                   type: string
+ *                   format: uuid
+ *                   example: "f1e2d3c4-b5a6-7890-1234-abcdefabcdef"
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/', auth, upload.single('thumb'), createRecipe);
 
 export default router;

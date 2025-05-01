@@ -23,22 +23,41 @@ module.exports = {
         { type: Sequelize.QueryTypes.SELECT }
     );
 
+    const categories = await queryInterface.sequelize.query(
+        'SELECT id, name FROM categories',
+        { type: Sequelize.QueryTypes.SELECT }
+    );
+
     const areaMap = {};
     areas.forEach(area => {
       areaMap[area.name.toLowerCase().trim()] = area.id;
     });
 
-    const recipesData = recipesDataRaw.map(recipe => {
-      const id = uuidv4();
-      insertedIds.push(id);
+    const categoryMap = {};
+    categories.forEach(category => {
+      categoryMap[category.name.toLowerCase().trim()] = category.id;
+    });
 
-      let areaId = null;
-      if (recipe.area) {
-        const areaNameLower = recipe.area.toLowerCase().trim();
-        areaId = areaMap[areaNameLower] || null;
+    const recipesData = [];
+
+    for (const recipe of recipesDataRaw) {
+      const id = uuidv4();
+
+      const areaId = recipe.area
+          ? areaMap[recipe.area.toLowerCase().trim()] || null
+          : null;
+
+      const categoryId = recipe.category
+          ? categoryMap[recipe.category.toLowerCase().trim()] || null
+          : null;
+
+      if (!categoryId) {
+        console.warn(`⚠️ Category "${recipe.category}" not found. Skipping recipe "${recipe.title}"`);
+        continue;
       }
 
-      return {
+      insertedIds.push(id);
+      recipesData.push({
         id,
         title: recipe.title,
         description: recipe.description || null,
@@ -46,11 +65,17 @@ module.exports = {
         thumb: recipe.thumb || null,
         time: recipe.time || null,
         areaId,
+        categoryId,
         ownerId,
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
-    });
+      });
+    }
+
+    if (recipesData.length === 0) {
+      console.warn('⚠️ No valid recipes to insert.');
+      return;
+    }
 
     await queryInterface.bulkInsert('recipes', recipesData, {});
   },

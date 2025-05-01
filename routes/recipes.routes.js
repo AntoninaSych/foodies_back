@@ -1,7 +1,6 @@
 // routes/recipes.routes.js
 import { Router } from 'express';
 import { getAllRecipes, getRecipeById } from '../controllers/recipes.controller.js';
-import auth from '../middlewares/auth.js';
 
 const router = Router();
 
@@ -78,7 +77,7 @@ const router = Router();
  *                         type: string
  *                         example: "123e4567-e89b-12d3-a456-426614174000"
  */
-router.get('/', auth, getAllRecipes);
+router.get('/', getAllRecipes);
 
 /**
  * @swagger
@@ -86,8 +85,6 @@ router.get('/', auth, getAllRecipes);
  *   get:
  *     summary: Get recipe by ID
  *     tags: [Recipes]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -189,6 +186,6 @@ router.get('/', auth, getAllRecipes);
  *                   type: string
  *                   example: "Something went wrong"
  */
-router.get('/:id', auth, getRecipeById);
+router.get('/:id', getRecipeById);
 
 export default router;

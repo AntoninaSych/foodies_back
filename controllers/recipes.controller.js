@@ -60,8 +60,9 @@ export const getRecipeById = async (req, res, next) => {
                 },
                 {
                     model: Ingredient,
+                    as: 'ingredients',
                     attributes: ['id', 'name', 'thumb'],
-                    through: { attributes: ['measure'] }, // ✅ measure включено
+                    through: { attributes: ['measure'] },
                 },
             ],
         });

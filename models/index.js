@@ -33,16 +33,19 @@ User.belongsToMany(User, {
   foreignKey: "followingId",
   otherKey: "followerId",
 });
+
 Recipe.belongsToMany(Ingredient, {
   through: RecipeIngredient,
   foreignKey: 'recipeId',
   otherKey: 'ingredientId',
 });
+
 Ingredient.belongsToMany(Recipe, {
   through: RecipeIngredient,
   foreignKey: 'ingredientId',
   otherKey: 'recipeId',
 });
+
 export {
   sequelize,
   User,

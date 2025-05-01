@@ -2,8 +2,34 @@
 
 const recipesDataRaw = require('../db/source/recipes.json');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
 
 let insertedIds = [];
+
+async function downloadImage(url, filename) {
+  const localDirPath = path.resolve(__dirname, '../public/images');
+  const filePath = path.join(localDirPath, filename);
+
+  const response = await axios({
+    url,
+    method: 'GET',
+    responseType: 'stream'
+  });
+
+  // Ensure the images directory exists
+  if (!fs.existsSync(localDirPath)) {
+    fs.mkdirSync(localDirPath, { recursive: true });
+  }
+
+  return new Promise((resolve, reject) => {
+    const writer = fs.createWriteStream(filePath);
+    response.data.pipe(writer);
+    writer.on('finish', () => resolve(`images/${filename}`));
+    writer.on('error', reject);
+  });
+}
 
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -28,7 +54,8 @@ module.exports = {
       areaMap[area.name.toLowerCase().trim()] = area.id;
     });
 
-    const recipesData = recipesDataRaw.map(recipe => {
+    const recipesData = [];
+    for (const recipe of recipesDataRaw) {
       const id = uuidv4();
       insertedIds.push(id);
 
@@ -38,19 +65,29 @@ module.exports = {
         areaId = areaMap[areaNameLower] || null;
       }
 
-      return {
+      let localThumbPath = null;
+      if (recipe.thumb) {
+        try {
+          const fileName = path.basename(new URL(recipe.thumb).pathname);
+          localThumbPath = await downloadImage(recipe.thumb, fileName);
+        } catch (err) {
+          console.warn(`⚠️ Failed to download image: ${recipe.thumb}`, err.message);
+        }
+      }
+
+      recipesData.push({
         id,
         title: recipe.title,
         description: recipe.description || null,
         instructions: recipe.instructions || null,
-        thumb: recipe.thumb || null,
+        thumb: localThumbPath,
         time: recipe.time || null,
         areaId,
         ownerId,
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
-    });
+      });
+    }
 
     await queryInterface.bulkInsert('recipes', recipesData, {});
   },

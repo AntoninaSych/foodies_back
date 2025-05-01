@@ -61,7 +61,6 @@ export const getRecipeById = async (req, res, next) => {
                 },
                 {
                     model: Ingredient,
-                    as: 'ingredients',
                     attributes: ['id', 'name', 'thumb'],
                     through: { attributes: ['measure'] },
                 },
@@ -124,6 +123,26 @@ export const createRecipe = async (req, res, next) => {
         await RecipeIngredient.bulkCreate(ingredientsToInsert);
 
         res.status(201).json({ message: 'Recipe created successfully', recipeId: newRecipe.id });
+    } catch (error) {
+        next(HttpError(500, error.message));
+    }
+};
+
+export const deleteOwnRecipe = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const recipe = await Recipe.findByPk(id);
+
+        if (!recipe) {
+            return next(HttpError(404, 'Рецепт не найден'));
+        }
+
+        if (recipe.ownerId !== req.user.id) {
+            return next(HttpError(403, 'У вас нет прав на удаление этого рецепта'));
+        }
+        await recipe.destroy();
+
+        res.status(204).send();
     } catch (error) {
         next(HttpError(500, error.message));
     }

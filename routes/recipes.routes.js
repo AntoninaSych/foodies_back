@@ -1,6 +1,6 @@
 import auth from '../middlewares/auth.js';
 import { Router } from 'express';
-import { getAllRecipes, getRecipeById, createRecipe } from '../controllers/recipes.controller.js';
+import { getAllRecipes, getRecipeById, createRecipe, deleteOwnRecipe } from '../controllers/recipes.controller.js';
 import upload from '../middlewares/upload.js';
 
 const router = Router();
@@ -259,5 +259,34 @@ router.get('/:id', getRecipeById);
  *         description: Internal server error
  */
 router.post('/', auth, upload.single('thumb'), createRecipe);
+
+
+/**
+ * @swagger
+ * /api/recipes/{id}:
+ *   delete:
+ *     summary: Удалить собственный рецепт
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Идентификатор рецепта для удаления
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Рецепт успешно удалён
+ *       403:
+ *         description: Доступ запрещён. Пользователь не является владельцем рецепта.
+ *       404:
+ *         description: Рецепт не найден
+ *       500:
+ *         description: Внутренняя ошибка сервера
+ */
+router.delete('/:id', auth, deleteOwnRecipe);
 
 export default router;

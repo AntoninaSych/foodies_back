@@ -1,5 +1,6 @@
-import { Recipe, Area, User, Ingredient } from '../models/index.js';
+import { Recipe, Area, User, Ingredient,  Category } from '../models/index.js';
 import HttpError from '../helpers/HttpError.js';
+
 
 export const getAllRecipes = async (req, res, next) => {
     try {
@@ -17,6 +18,11 @@ export const getAllRecipes = async (req, res, next) => {
                     model: User,
                     as: 'owner',
                     attributes: ['id', 'name', 'email'],
+                },
+                {
+                    model: Category,
+                    as: 'category',
+                    attributes: ['id', 'name', 'thumb'],
                 },
             ],
             offset,

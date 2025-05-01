@@ -1,16 +1,16 @@
-import { Router } from 'express';
-import { register, login } from '../controllers/authController.js';
-import auth from '../middlewares/auth.js';
-import upload from '../middlewares/upload.js';
-import { User } from '../models/index.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { Router } from "express";
+import {
+  register,
+  login,
+  changeAvatar,
+} from "../controllers/authController.js";
+import auth from "../middlewares/auth.js";
+import upload from "../middlewares/upload.js";
+import { User } from "../models/index.js";
+import fs from "fs/promises";
+import path from "path";
 
 const router = Router();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * @swagger
@@ -51,7 +51,7 @@ const __dirname = path.dirname(__filename);
  *       409:
  *         description: Email already in use
  */
-router.post('/register', register);
+router.post("/register", register);
 
 /**
  * @swagger
@@ -82,7 +82,7 @@ router.post('/register', register);
  *       401:
  *         description: Unauthorized
  */
-router.post('/login', login);
+router.post("/login", login);
 
 /**
  * @swagger
@@ -109,9 +109,9 @@ router.post('/login', login);
  *       401:
  *         description: Unauthorized
  */
-router.get('/current', auth, async (req, res) => {
-    const { email, name, avatarURL } = req.user;
-    res.status(200).json({ email, name, avatarURL });
+router.get("/current", auth, async (req, res) => {
+  const { email, name, avatarURL } = req.user;
+  res.status(200).json({ email, name, avatarURL });
 });
 
 /**
@@ -128,13 +128,13 @@ router.get('/current', auth, async (req, res) => {
  *       401:
  *         description: Unauthorized
  */
-router.post('/logout', auth, async (req, res, next) => {
-    try {
-        await req.user.update({ token: null });
-        res.status(204).send();
-    } catch (err) {
-        next(err);
-    }
+router.post("/logout", auth, async (req, res, next) => {
+  try {
+    await req.user.update({ token: null });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
 });
 
 /**
@@ -174,21 +174,6 @@ router.post('/logout', auth, async (req, res, next) => {
  *       401:
  *         description: Unauthorized
  */
-router.patch('/avatars', auth, upload.single('avatar'), async (req, res, next) => {
-    try {
-        const { path: tempPath, filename } = req.file;
-        const avatarsDir = path.join(__dirname, '../public/avatars');
-        const resultPath = path.join(avatarsDir, filename);
-        await fs.rename(tempPath, resultPath);
-
-        const avatarURL = `/avatars/${filename}`;
-        req.user.avatarURL = avatarURL;
-        await req.user.save();
-
-        res.json({ avatarURL });
-    } catch (err) {
-        next(err);
-    }
-});
+router.patch("/avatars", auth, upload.single("avatar"), changeAvatar);
 
 export default router;

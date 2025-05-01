@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login } from '../controllers/authController.js';
+import { register, login, getCurrent } from '../controllers/authController.js';
 import auth from '../middlewares/auth.js';
 import upload from '../middlewares/upload.js';
 import { User } from '../models/index.js';
@@ -100,6 +100,8 @@ router.post('/login', login);
  *             schema:
  *               type: object
  *               properties:
+ *                 id:
+ *                   type: string
  *                 email:
  *                   type: string
  *                 name:
@@ -109,10 +111,8 @@ router.post('/login', login);
  *       401:
  *         description: Unauthorized
  */
-router.get('/current', auth, async (req, res) => {
-    const { email, name, avatarURL } = req.user;
-    res.status(200).json({ email, name, avatarURL });
-});
+router.get('/current',auth, getCurrent);
+
 
 /**
  * @swagger

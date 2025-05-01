@@ -10,11 +10,12 @@ import RecipeIngredient from './RecipeIngredient.js';
 import Follow from "./follow.js";
 
 
-User.hasMany(Recipe, { foreignKey: 'ownerId', as: 'recipes' }); // 🔥 ownerId
-Recipe.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' }); // 🔥 ownerId
+User.hasMany(Recipe, { foreignKey: 'ownerId', as: 'recipes' });
+Recipe.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
+Recipe.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
 
-Area.hasMany(Recipe, { foreignKey: 'areaId', as: 'recipes' });  // 🔥 areaId
-Recipe.belongsTo(Area, { foreignKey: 'areaId', as: 'area' });   // 🔥 areaId
+Area.hasMany(Recipe, { foreignKey: 'areaId', as: 'recipes' });
+Recipe.belongsTo(Area, { foreignKey: 'areaId', as: 'area' });
 
 Recipe.belongsToMany(Ingredient, { through: RecipeIngredient, foreignKey: 'recipeId', otherKey: 'ingredientId' });
 Ingredient.belongsToMany(Recipe, { through: RecipeIngredient, foreignKey: 'ingredientId', otherKey: 'recipeId' });

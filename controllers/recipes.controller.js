@@ -1,6 +1,6 @@
-import { Recipe, Area, User } from '../models/index.js';
+import { Recipe, Area, User,  Category } from '../models/index.js';
 import HttpError from '../helpers/HttpError.js';
-import Category from "../models/Category.js";
+
 
 export const getAllRecipes = async (req, res, next) => {
     try {

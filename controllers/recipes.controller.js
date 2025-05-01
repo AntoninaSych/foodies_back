@@ -1,6 +1,7 @@
-import { Recipe, Area, User, Ingredient,  Category } from '../models/index.js';
+import { Recipe, Area, User, Ingredient, Category, RecipeIngredient } from '../models/index.js';
 import HttpError from '../helpers/HttpError.js';
 
+import path from 'path';
 
 export const getAllRecipes = async (req, res, next) => {
     try {
@@ -72,6 +73,57 @@ export const getRecipeById = async (req, res, next) => {
         }
 
         res.json(recipe);
+    } catch (error) {
+        next(HttpError(500, error.message));
+    }
+};
+
+export const createRecipe = async (req, res, next) => {
+    try {
+        const {
+            title,
+            description,
+            instructions,
+            time,
+            categoryId,
+            areaId,
+            ingredients,
+        } = req.body;
+
+        // ✅ Парсимо масив інгредієнтів (frontend надсилає JSON.stringify)
+        const parsedIngredients = JSON.parse(ingredients || '[]');
+
+        if (!title || !categoryId || parsedIngredients.length === 0) {
+            return next(HttpError(400, 'Title, category and at least one ingredient are required.'));
+        }
+
+        const thumbPath = req.file
+            ? path.join('images', 'recipies', req.file.filename)
+            : null;
+
+        const newRecipe = await Recipe.create({
+            title,
+            description,
+            instructions,
+            time,
+            categoryId,
+            areaId: areaId || null,
+            ownerId: req.user.id,
+            thumb: thumbPath,
+        });
+
+        // Зберігаємо інгредієнти з мірками у pivot таблицю
+        const ingredientsToInsert = parsedIngredients.map(ing => ({
+            recipeId: newRecipe.id,
+            ingredientId: ing.id,
+            measure: ing.measure || null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }));
+
+        await RecipeIngredient.bulkCreate(ingredientsToInsert);
+
+        res.status(201).json({ message: 'Recipe created successfully', recipeId: newRecipe.id });
     } catch (error) {
         next(HttpError(500, error.message));
     }

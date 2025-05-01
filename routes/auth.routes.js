@@ -71,9 +71,11 @@ router.post('/register', register);
  *             properties:
  *               email:
  *                 type: string
+ *                 example: admin@foodies.com
  *               password:
  *                 type: string
  *                 format: password
+ *                 example: password123
  *     responses:
  *       200:
  *         description: Successful login

@@ -79,6 +79,7 @@ export const login = async (req, res, next) => {
     res.status(200).json({
       token,
       user: {
+        id: user.id,
         name: user.name,
         email: user.email,
         avatarURL: user.avatarURL,
@@ -90,8 +91,8 @@ export const login = async (req, res, next) => {
 };
 
 export const getCurrent = async (req, res) => {
-  const { name, email, avatarURL } = req.user;
-  res.status(200).json({ name, email, avatarURL });
+  const { id, name, email, avatarURL } = req.user;
+  res.status(200).json({ id, name, email, avatarURL });
 };
 
 export const logout = async (req, res, next) => {

@@ -100,6 +100,8 @@ router.post("/login", login);
  *             schema:
  *               type: object
  *               properties:
+ *                 id:
+ *                   type: string
  *                 email:
  *                   type: string
  *                 name:

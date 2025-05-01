@@ -1,6 +1,6 @@
 node_modules/
 .env
-
+.env_prod
 # Sequelize files
 /migrations/*.js~
 /seeders/*.js~

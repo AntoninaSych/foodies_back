@@ -1,6 +1,6 @@
 // routes/recipes.routes.js
 import { Router } from 'express';
-import { getAllRecipes } from '../controllers/recipes.controller.js';
+import { getAllRecipes, getRecipeById } from '../controllers/recipes.controller.js';
 
 const router = Router();
 
@@ -78,5 +78,114 @@ const router = Router();
  *                         example: "123e4567-e89b-12d3-a456-426614174000"
  */
 router.get('/', getAllRecipes);
+
+/**
+ * @swagger
+ * /api/recipes/{id}:
+ *   get:
+ *     summary: Get recipe by ID
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: UUID of the recipe
+ *     responses:
+ *       200:
+ *         description: Recipe found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   format: uuid
+ *                   example: "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6"
+ *                 title:
+ *                   type: string
+ *                   example: "Chicken Curry"
+ *                 description:
+ *                   type: string
+ *                   example: "Delicious spicy chicken curry recipe."
+ *                 instructions:
+ *                   type: string
+ *                   example: "Mix spices, cook chicken, and simmer for 30 minutes."
+ *                 thumb:
+ *                   type: string
+ *                   format: uri
+ *                   example: "https://example.com/images/chicken-curry.jpg"
+ *                 time:
+ *                   type: string
+ *                   example: "45 min"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2025-04-29T12:34:56.000Z"
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2025-04-29T13:45:00.000Z"
+ *                 area:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                       example: "b2a3c4d5-f6g7-8h9i-j0k1-l2m3n4o5p6q7"
+ *                     name:
+ *                       type: string
+ *                       example: "Indian"
+ *                 owner:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                       example: "123e4567-e89b-12d3-a456-426614174000"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "john@example.com"
+ *                 ingredients:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                         example: "789e0123-f456-789a-bcde-1234567890ab"
+ *                       name:
+ *                         type: string
+ *                         example: "Chicken"
+ *       404:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Recipe not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Something went wrong"
+ */
+router.get('/:id', getRecipeById);
 
 export default router;

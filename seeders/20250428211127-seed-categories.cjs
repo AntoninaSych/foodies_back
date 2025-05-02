@@ -8,7 +8,7 @@ module.exports = {
     const categoriesData = categories.map(category => ({
       id: uuidv4(),
       name: category.name,
-      thumb: category.thumb,
+      thumb: 'images/categories/' + category.name + ".jpg",
     }));
 
     await queryInterface.bulkInsert('categories', categoriesData, {});

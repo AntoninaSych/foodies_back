@@ -1,6 +1,7 @@
-// routes/recipes.routes.js
+import auth from '../middlewares/auth.js';
 import { Router } from 'express';
-import { getAllRecipes } from '../controllers/recipes.controller.js';
+import { getAllRecipes, getRecipeById, createRecipe, deleteOwnRecipe } from '../controllers/recipes.controller.js';
+import upload from '../middlewares/upload.js';
 
 const router = Router();
 
@@ -78,5 +79,214 @@ const router = Router();
  *                         example: "123e4567-e89b-12d3-a456-426614174000"
  */
 router.get('/', getAllRecipes);
+
+/**
+ * @swagger
+ * /api/recipes/{id}:
+ *   get:
+ *     summary: Get recipe by ID
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: UUID of the recipe
+ *     responses:
+ *       200:
+ *         description: Recipe found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   format: uuid
+ *                   example: "a1b2c3d4-e5f6-7g8h-9i0j-k1l2m3n4o5p6"
+ *                 title:
+ *                   type: string
+ *                   example: "Chicken Curry"
+ *                 description:
+ *                   type: string
+ *                   example: "Delicious spicy chicken curry recipe."
+ *                 instructions:
+ *                   type: string
+ *                   example: "Mix spices, cook chicken, and simmer for 30 minutes."
+ *                 thumb:
+ *                   type: string
+ *                   format: uri
+ *                   example: "https://example.com/images/chicken-curry.jpg"
+ *                 time:
+ *                   type: string
+ *                   example: "45 min"
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2025-04-29T12:34:56.000Z"
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2025-04-29T13:45:00.000Z"
+ *                 area:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                       example: "b2a3c4d5-f6g7-8h9i-j0k1-l2m3n4o5p6q7"
+ *                     name:
+ *                       type: string
+ *                       example: "Indian"
+ *                 owner:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                       example: "123e4567-e89b-12d3-a456-426614174000"
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "john@example.com"
+ *                 ingredients:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                         example: "789e0123-f456-789a-bcde-1234567890ab"
+ *                       name:
+ *                         type: string
+ *                         example: "Chicken"
+ *       404:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Recipe not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Something went wrong"
+ */
+router.get('/:id', getRecipeById);
+
+/**
+ * @swagger
+ * /api/recipes:
+ *   post:
+ *     summary: Create a new recipe
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - categoryId
+ *               - ingredients
+ *               - areaId
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: "Avocado Toast"
+ *               description:
+ *                 type: string
+ *                 example: "Tasty and healthy toast with avocado and egg"
+ *               instructions:
+ *                 type: string
+ *                 example: "Toast bread, mash avocado, poach egg, combine"
+ *               time:
+ *                 type: string
+ *                 example: "10 min"
+ *               categoryId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "1a2b3c4d-5e6f-7g8h-9i0j-k1l2m3n4o5p6"
+ *               areaId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "d4c3b2a1-f6e5-d7c8-b9a0-j1k2l3m4n5o6"
+ *               ingredients:
+ *                 type: string
+ *                 description: JSON.stringify array of ingredient objects with id and measure
+ *                 example: '[{"id": "abc-123", "measure": "1 tsp"}, {"id": "def-456", "measure": "200g"}]'
+ *               thumb:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Recipe created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Recipe created successfully"
+ *                 recipeId:
+ *                   type: string
+ *                   format: uuid
+ *                   example: "f1e2d3c4-b5a6-7890-1234-abcdefabcdef"
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/', auth, upload.single('thumb'), createRecipe);
+
+
+/**
+ * @swagger
+ * /api/recipes/{id}:
+ *   delete:
+ *     summary: Удалить собственный рецепт
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Идентификатор рецепта для удаления
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       204:
+ *         description: Рецепт успешно удалён
+ *       403:
+ *         description: Доступ запрещён. Пользователь не является владельцем рецепта.
+ *       404:
+ *         description: Рецепт не найден
+ *       500:
+ *         description: Внутренняя ошибка сервера
+ */
+router.delete('/:id', auth, deleteOwnRecipe);
 
 export default router;

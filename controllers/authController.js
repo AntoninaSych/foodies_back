@@ -114,7 +114,7 @@ export const changeAvatar = async (req, res, next) => {
       res.status(400).json({ message: "File upload error" });
     }
     const { path: tempPath, filename } = req.file;
-    const avatarsDir = path.join(__dirname, "../public/avatars");
+    const avatarsDir = path.join(__dirname, "../public/images/avatars");
     await createDirIfNotExist(avatarsDir);
     const resultPath = path.join(avatarsDir, filename);
     await fs.rename(tempPath, resultPath);

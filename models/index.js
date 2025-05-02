@@ -17,8 +17,19 @@ Recipe.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
 Area.hasMany(Recipe, { foreignKey: 'areaId', as: 'recipes' });
 Recipe.belongsTo(Area, { foreignKey: 'areaId', as: 'area' });
 
-Recipe.belongsToMany(Ingredient, { through: RecipeIngredient, foreignKey: 'recipeId', otherKey: 'ingredientId' });
-Ingredient.belongsToMany(Recipe, { through: RecipeIngredient, foreignKey: 'ingredientId', otherKey: 'recipeId' });
+Recipe.belongsToMany(Ingredient, {
+  through: RecipeIngredient,
+  as: "ingredients",
+  foreignKey: "recipeId",
+  otherKey: "ingredientId",
+});
+
+Ingredient.belongsToMany(Recipe, {
+  through: RecipeIngredient,
+  as: "recipes",
+  foreignKey: "ingredientId",
+  otherKey: "recipeId",
+});
 
 User.belongsToMany(User, {
   through: Follow,
@@ -32,18 +43,6 @@ User.belongsToMany(User, {
   as: "followers", // ті, хто слідкує за мною
   foreignKey: "followingId",
   otherKey: "followerId",
-});
-
-Recipe.belongsToMany(Ingredient, {
-  through: RecipeIngredient,
-  foreignKey: 'recipeId',
-  otherKey: 'ingredientId',
-});
-
-Ingredient.belongsToMany(Recipe, {
-  through: RecipeIngredient,
-  foreignKey: 'ingredientId',
-  otherKey: 'recipeId',
 });
 
 export {

@@ -1,16 +1,11 @@
-import { Router } from 'express';
-import { register, login, getCurrent } from '../controllers/authController.js';
-import auth from '../middlewares/auth.js';
-import upload from '../middlewares/upload.js';
-import { User } from '../models/index.js';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { Router } from "express";
+import {
+  register,
+  login,
+} from "../controllers/authController.js";
+import auth from "../middlewares/auth.js";
 
 const router = Router();
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 /**
  * @swagger
@@ -51,7 +46,7 @@ const __dirname = path.dirname(__filename);
  *       409:
  *         description: Email already in use
  */
-router.post('/register', register);
+router.post("/register", register);
 
 /**
  * @swagger
@@ -84,7 +79,7 @@ router.post('/register', register);
  *       401:
  *         description: Unauthorized
  */
-router.post('/login', login);
+router.post("/login", login);
 
 /**
  * @swagger
@@ -113,8 +108,10 @@ router.post('/login', login);
  *       401:
  *         description: Unauthorized
  */
-router.get('/current',auth, getCurrent);
-
+router.get("/current", auth, async (req, res) => {
+  const { email, name, avatarURL } = req.user;
+  res.status(200).json({ email, name, avatarURL });
+});
 
 /**
  * @swagger
@@ -130,67 +127,14 @@ router.get('/current',auth, getCurrent);
  *       401:
  *         description: Unauthorized
  */
-router.post('/logout', auth, async (req, res, next) => {
-    try {
-        await req.user.update({ token: null });
-        res.status(204).send();
-    } catch (err) {
-        next(err);
-    }
+router.post("/logout", auth, async (req, res, next) => {
+  try {
+    await req.user.update({ token: null });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
 });
 
-/**
- * @swagger
- * /api/auth/avatars:
- *   patch:
- *     summary: Upload user avatar
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     consumes:
- *       - multipart/form-data
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - avatar
- *             properties:
- *               avatar:
- *                 type: string
- *                 format: binary
- *     responses:
- *       200:
- *         description: Avatar updated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 avatarURL:
- *                   type: string
- *       400:
- *         description: File upload error
- *       401:
- *         description: Unauthorized
- */
-router.patch('/avatars', auth, upload.single('avatar'), async (req, res, next) => {
-    try {
-        const { path: tempPath, filename } = req.file;
-        const avatarsDir = path.join(__dirname, '../public/avatars');
-        const resultPath = path.join(avatarsDir, filename);
-        await fs.rename(tempPath, resultPath);
-
-        const avatarURL = `/avatars/${filename}`;
-        req.user.avatarURL = avatarURL;
-        await req.user.save();
-
-        res.json({ avatarURL });
-    } catch (err) {
-        next(err);
-    }
-});
 
 export default router;

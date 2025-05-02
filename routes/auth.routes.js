@@ -2,13 +2,8 @@ import { Router } from "express";
 import {
   register,
   login,
-  changeAvatar,
 } from "../controllers/authController.js";
 import auth from "../middlewares/auth.js";
-import upload from "../middlewares/upload.js";
-import { User } from "../models/index.js";
-import fs from "fs/promises";
-import path from "path";
 
 const router = Router();
 
@@ -141,43 +136,5 @@ router.post("/logout", auth, async (req, res, next) => {
   }
 });
 
-/**
- * @swagger
- * /api/auth/avatars:
- *   patch:
- *     summary: Upload user avatar
- *     tags: [Auth]
- *     security:
- *       - bearerAuth: []
- *     consumes:
- *       - multipart/form-data
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - avatar
- *             properties:
- *               avatar:
- *                 type: string
- *                 format: binary
- *     responses:
- *       200:
- *         description: Avatar updated
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 avatarURL:
- *                   type: string
- *       400:
- *         description: File upload error
- *       401:
- *         description: Unauthorized
- */
-router.patch("/avatars", auth, upload.single("avatar"), changeAvatar);
 
 export default router;

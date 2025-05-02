@@ -4,7 +4,10 @@ import {
   getAllUsers,
   followUser,
   unfollowUser,
+  changeAvatar
 } from "../controllers/users.controller.js";
+import upload from "../middlewares/upload.js";
+
 
 
 const router = Router();
@@ -141,5 +144,43 @@ router.post("/:id/follow", auth, followUser);
  */
 router.delete('/:id/follow', auth, unfollowUser);
 
+/**
+ * @swagger
+ * /api/users/avatars:
+ *   patch:
+ *     summary: Upload user avatar
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     consumes:
+ *       - multipart/form-data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - avatar
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Avatar updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 avatarURL:
+ *                   type: string
+ *       400:
+ *         description: File upload error
+ *       401:
+ *         description: Unauthorized
+ */
+router.patch("/avatars", auth, upload.single("avatar"), changeAvatar);
 
 export default router;

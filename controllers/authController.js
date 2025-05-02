@@ -3,10 +3,8 @@ import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import Joi from "joi";
 import { User } from "../models/index.js";
-import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import createDirIfNotExist from "../helpers/createDirIfNotExist.js";
 
 const registerSchema = Joi.object({
   name: Joi.string().required(),
@@ -107,24 +105,3 @@ export const logout = async (req, res, next) => {
 // For avatar change
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-export const changeAvatar = async (req, res, next) => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ message: "File upload error" });
-    }
-    const { path: tempPath, filename } = req.file;
-    const avatarsDir = path.join(__dirname, "../public/images/avatars");
-    await createDirIfNotExist(avatarsDir);
-    const resultPath = path.join(avatarsDir, filename);
-    await fs.rename(tempPath, resultPath);
-
-    const avatarURL = `/avatars/${filename}`;
-    req.user.avatarURL = avatarURL;
-    await req.user.save();
-
-    res.json({ avatarURL });
-  } catch (err) {
-    next(err);
-  }
-};

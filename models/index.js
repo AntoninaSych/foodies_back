@@ -1,24 +1,32 @@
-import sequelize from '../db/sequelize.js';
+import sequelize from "../db/sequelize.js";
 
-import User from './User.js';
-import Area from './Area.js';
-import Category from './Category.js';
-import Ingredient from './Ingredient.js';
-import Recipe from './Recipe.js';
-import Testimonial from './Testimonial.js';
-import RecipeIngredient from './RecipeIngredient.js';
+import User from "./User.js";
+import Area from "./Area.js";
+import Category from "./Category.js";
+import Ingredient from "./Ingredient.js";
+import Recipe from "./Recipe.js";
+import Testimonial from "./Testimonial.js";
+import RecipeIngredient from "./RecipeIngredient.js";
 import Follow from "./follow.js";
+import Favorite from "./favorite.js";
 
+User.hasMany(Recipe, { foreignKey: "ownerId", as: "recipes" });
+Recipe.belongsTo(User, { foreignKey: "ownerId", as: "owner" });
+Recipe.belongsTo(Category, { foreignKey: "categoryId", as: "category" });
 
-User.hasMany(Recipe, { foreignKey: 'ownerId', as: 'recipes' });
-Recipe.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
-Recipe.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
+Area.hasMany(Recipe, { foreignKey: "areaId", as: "recipes" });
+Recipe.belongsTo(Area, { foreignKey: "areaId", as: "area" });
 
-Area.hasMany(Recipe, { foreignKey: 'areaId', as: 'recipes' });
-Recipe.belongsTo(Area, { foreignKey: 'areaId', as: 'area' });
-
-Recipe.belongsToMany(Ingredient, { through: RecipeIngredient, foreignKey: 'recipeId', otherKey: 'ingredientId' });
-Ingredient.belongsToMany(Recipe, { through: RecipeIngredient, foreignKey: 'ingredientId', otherKey: 'recipeId' });
+Recipe.belongsToMany(Ingredient, {
+  through: RecipeIngredient,
+  foreignKey: "recipeId",
+  otherKey: "ingredientId",
+});
+Ingredient.belongsToMany(Recipe, {
+  through: RecipeIngredient,
+  foreignKey: "ingredientId",
+  otherKey: "recipeId",
+});
 
 User.belongsToMany(User, {
   through: Follow,
@@ -36,14 +44,26 @@ User.belongsToMany(User, {
 
 Recipe.belongsToMany(Ingredient, {
   through: RecipeIngredient,
-  foreignKey: 'recipeId',
-  otherKey: 'ingredientId',
+  foreignKey: "recipeId",
+  otherKey: "ingredientId",
 });
 
 Ingredient.belongsToMany(Recipe, {
   through: RecipeIngredient,
-  foreignKey: 'ingredientId',
-  otherKey: 'recipeId',
+  foreignKey: "ingredientId",
+  otherKey: "recipeId",
+});
+
+User.belongsToMany(Recipe, {
+  through: Favorite,
+  foreignKey: "userId",
+  otherKey: "recipeId",
+});
+
+Recipe.belongsToMany(User, {
+  through: Favorite,
+  foreignKey: "recipeId",
+  otherKey: "userId",
 });
 
 export {

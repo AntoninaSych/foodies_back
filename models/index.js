@@ -76,4 +76,5 @@ export {
   Testimonial,
   RecipeIngredient,
   Follow,
+  Favorite,
 };

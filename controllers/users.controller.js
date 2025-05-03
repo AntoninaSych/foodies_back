@@ -1,16 +1,59 @@
-import { User } from '../models/index.js';
-import HttpError from '../helpers/HttpError.js';
+import { Recipe, User, Follow, Favorite } from "../models/index.js";
+import HttpError from "../helpers/HttpError.js";
 import path from "path";
 import createDirIfNotExist from "../helpers/createDirIfNotExist.js";
 import fs from "fs/promises";
 
 export const getAllUsers = async (req, res, next) => {
-    try {
-        const users = await User.findAll();
-        res.json(users);
-    } catch (error) {
-        next(HttpError(500, error.message));
-    }
+  try {
+    const users = await User.findAll();
+    res.json(users);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+export const getCurrentUserInfo = async (req, res, next) => {
+  try {
+    const { id, name, email, avatarURL } = req.user; // user comes from auth
+    const createdRecipes = await Recipe.count({ where: { ownerId: id } });
+    const favorites = await Favorite.count({ where: { userId: id } });
+    const followers = await Follow.count({ where: { followingId: id } });
+    const following = await Follow.count({ where: { followerId: id } });
+    res.status(200).json({
+      user: { id, name, email, avatarURL },
+      createdRecipes,
+      favorites,
+      followers,
+      following,
+    });
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+export const getUserInfo = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) res.status(404).json("User not found");
+    const createdRecipes = await Recipe.count({ where: { ownerId: id } });
+    const favorites = await Favorite.count({ where: { userId: id } });
+    const followers = await Follow.count({ where: { followingId: id } });
+    res.status(200).json({
+      user: {
+        id,
+        name: user.name,
+        email: user.email,
+        avatarURL: user.avatarURL,
+      },
+      createdRecipes,
+      favorites,
+      followers,
+    });
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
 };
 
 export const followUser = async (req, res, next) => {

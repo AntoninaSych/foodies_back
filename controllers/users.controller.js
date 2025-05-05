@@ -1,5 +1,6 @@
 import { Recipe, User, Follow, Favorite } from "../models/index.js";
 import HttpError from "../helpers/HttpError.js";
+import { fileURLToPath } from "url";
 import path from "path";
 import createDirIfNotExist from "../helpers/createDirIfNotExist.js";
 import fs from "fs/promises";
@@ -13,15 +14,25 @@ export const getAllUsers = async (req, res, next) => {
   }
 };
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const defaultAvatar = "/public/images/avatars/default.png";
+
 export const getCurrentUserInfo = async (req, res, next) => {
   try {
     const { id, name, email, avatarURL } = req.user; // user comes from auth
+    let fullAvatarUrl = avatarURL;
+    if (!avatarURL) fullAvatarUrl = path.join(__dirname, defaultAvatar);
+    else if (!avatarURL.startsWith("http")) {
+      fullAvatarUrl = path.join(__dirname, avatarURL);
+    }
+    console.log(fullAvatarUrl);
     const createdRecipes = await Recipe.count({ where: { ownerId: id } });
     const favorites = await Favorite.count({ where: { userId: id } });
     const followers = await Follow.count({ where: { followingId: id } });
     const following = await Follow.count({ where: { followerId: id } });
     res.status(200).json({
-      user: { id, name, email, avatarURL },
+      user: { id, name, email, avatarURL: fullAvatarUrl },
       createdRecipes,
       favorites,
       followers,
@@ -37,6 +48,12 @@ export const getUserInfo = async (req, res, next) => {
     const { id } = req.params;
     const user = await User.findByPk(id);
     if (!user) res.status(404).json("User not found");
+    let avatarURL = user.avatarURL;
+    if (!avatarURL) avatarURL = path.join(__dirname, defaultAvatar);
+    else if (!avatarURL.startsWith("http")) {
+      avatarURL = path.join(__dirname, avatarURL);
+    }
+    console.log(avatarURL);
     const createdRecipes = await Recipe.count({ where: { ownerId: id } });
     const favorites = await Favorite.count({ where: { userId: id } });
     const followers = await Follow.count({ where: { followingId: id } });
@@ -45,7 +62,7 @@ export const getUserInfo = async (req, res, next) => {
         id,
         name: user.name,
         email: user.email,
-        avatarURL: user.avatarURL,
+        avatarURL,
       },
       createdRecipes,
       favorites,

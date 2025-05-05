@@ -33,4 +33,7 @@ coverage/
 
 tmp/
 temp/
-public/images/avatars/
+# all avatars
+public/images/avatars/* 
+# except default avatar
+!public/images/avatars/default.png

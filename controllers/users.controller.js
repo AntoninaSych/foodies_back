@@ -81,3 +81,12 @@ export const changeAvatar = async (req, res, next) => {
     next(err);
   }
 };
+
+export const followers = async (req, res, next) => {
+  try {
+    const followers = await req.user.getFollowers();
+    res.json(followers);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};

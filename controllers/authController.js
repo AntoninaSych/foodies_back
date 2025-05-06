@@ -4,7 +4,10 @@ import gravatar from "gravatar";
 import Joi from "joi";
 import { User } from "../models/index.js";
 import path from "path";
+import fs from 'fs/promises';
+import { v4 as uuidv4 } from 'uuid';
 import { fileURLToPath } from "url";
+import axios from 'axios';
 
 const registerSchema = Joi.object({
   name: Joi.string().required(),
@@ -18,6 +21,8 @@ const loginSchema = Joi.object({
 });
 
 const SECRET_KEY = process.env.JWT_SECRET || "defaultsecret";
+
+const AVATARS_DIR = path.resolve('public', 'images', 'avatars');
 
 export const register = async (req, res, next) => {
   try {
@@ -34,7 +39,18 @@ export const register = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const avatarURL = "http:" + gravatar.url(email, { s: "250", d: "retro" });
+
+    const gravatarUrl = gravatar.url(email, { s: "250", d: "retro" }, true); // true = https
+
+    const avatarFilename = `${uuidv4()}.jpg`;
+    const avatarPath = path.join(AVATARS_DIR, avatarFilename);
+
+    const response = await axios.get(gravatarUrl, { responseType: 'arraybuffer' });
+    await fs.writeFile(avatarPath, response.data);
+
+    const host = process.env.DB_HOST || 'localhost';
+    const port = process.env.PORT || 3000;
+    const avatarURL = `http://${host}:${port}/public/images/avatars/${avatarFilename}`;
 
     const newUser = await User.create({
       name,

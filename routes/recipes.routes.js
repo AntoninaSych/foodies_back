@@ -1,7 +1,19 @@
 import auth from '../middlewares/auth.js';
 import { Router } from 'express';
-import { getAllRecipes, getRecipeById, createRecipe, deleteOwnRecipe, searchRecipes } from '../controllers/recipes.controller.js';
+import {
+  getAllRecipes,
+  getRecipeById,
+  createRecipe,
+  deleteOwnRecipe,
+  searchRecipes,
+  getFavorites,
+  addToFavorites,
+  removeFromFavorites,
+  getPopular,
+} from '../controllers/recipes.controller.js';
 import upload from '../middlewares/upload.js';
+
+const router = Router();
 
 const router = Router();
 
@@ -139,7 +151,85 @@ router.get('/search', searchRecipes);
  *                         type: string
  *                         example: "123e4567-e89b-12d3-a456-426614174000"
  */
-router.get('/', getAllRecipes);
+router.get("/", getAllRecipes);
+
+/**
+ * @swagger
+ * /api/recipes/own:
+ *   get:
+ *     summary: Get recipes created by the current user
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of recipes created by the authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/own", auth, getOwnRecipes);
+
+/**
+ * @swagger
+ * /api/recipes/popular:
+ *   get:
+ *     summary: Get popular recipes
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of popular recipes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/popular", getPopular);
+
+/**
+ * @swagger
+ * /api/recipes/favorites:
+ *   get:
+ *     summary: Get recipes favorited by the current user
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of recipes favorited by the authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/favorites", auth, getFavorites);
 
 /**
  * @swagger
@@ -248,7 +338,7 @@ router.get('/', getAllRecipes);
  *                   type: string
  *                   example: "Something went wrong"
  */
-router.get('/:id', getRecipeById);
+router.get("/:id", getRecipeById);
 
 /**
  * @swagger
@@ -268,7 +358,6 @@ router.get('/:id', getRecipeById);
  *               - title
  *               - categoryId
  *               - ingredients
- *               - areaId
  *             properties:
  *               title:
  *                 type: string
@@ -319,8 +408,7 @@ router.get('/:id', getRecipeById);
  *       500:
  *         description: Internal server error
  */
-router.post('/', auth, upload.single('thumb'), createRecipe);
-
+router.post("/", auth, upload.single("thumb"), createRecipe);
 
 /**
  * @swagger
@@ -348,7 +436,95 @@ router.post('/', auth, upload.single('thumb'), createRecipe);
  *       500:
  *         description: Внутренняя ошибка сервера
  */
-router.delete('/:id', auth, deleteOwnRecipe);
+router.delete("/:id", auth, deleteOwnRecipe);
+
+/**
+ * @swagger
+ * /api/recipes/{id}/favorite:
+ *   post:
+ *     summary: Add a recipe to favorites
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID of the recipe to add to favorites
+ *     responses:
+ *       200:
+ *         description: Recipe added to favorites
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Added recipe 123e4567-e89b-12d3-a456-426614174000 to favorites
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/:id/favorite", auth, addToFavorites);
+
+/**
+ * @swagger
+ * /api/recipes/{id}/unfavorite:
+ *   delete:
+ *     summary: Remove a recipe from favorites
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID of the recipe to remove from favorites
+ *     responses:
+ *       200:
+ *         description: Recipe removed from favorites
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Removed recipe 123e4567-e89b-12d3-a456-426614174000 from favorites
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ */
+router.delete("/:id/favorite", auth, removeFromFavorites);
 
 
 

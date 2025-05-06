@@ -6,7 +6,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
-import authRouter from "./routes/auth.routes.js";
 import areasRouter from "./routes/areas.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import ingredientsRouter from "./routes/ingredients.routes.js";
@@ -27,18 +26,18 @@ app.use(logger("dev"));
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+app.use(express.static("public/images/recipies"));
 const PORT = process.env.PORT || 5000;
 const BASE_URL = process.env.APP_URL || `http://localhost:${PORT}`;
 
-// app.use('/avatars', express.static(path.join(__dirname, 'public/avatars')));
-
+app.use('/avatars', express.static(path.join(__dirname, 'public/images/avatars')));
 app.use("/api/areas", areasRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/ingredients", ingredientsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/recipes", recipesRouter);
 app.use("/api/testimonials", testimonialsRouter);
-app.use("/api/auth", authRouter);
+
 
 const swaggerOptions = {
   definition: {

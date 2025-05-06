@@ -7,15 +7,16 @@ import {
   RecipeIngredient,
 } from "../models/index.js";
 import HttpError from "../helpers/HttpError.js";
-
+import { Sequelize } from "sequelize";
 import path from "path";
+import fs from "fs/promises";
 
 export const getAllRecipes = async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const offset = (page - 1) * limit;
 
-    const recipes = await Recipe.findAll({
+    const options = {
       include: [
         {
           model: Area,
@@ -36,8 +37,13 @@ export const getAllRecipes = async (req, res, next) => {
       offset,
       limit: parseInt(limit),
       order: [["createdAt", "DESC"]],
-    });
+    };
 
+    if (req.user) {
+      options.where = { ownerId: req.user.id };
+    }
+
+    const recipes = await Recipe.findAll(options);
     res.json(recipes);
   } catch (error) {
     next(HttpError(500, error.message));
@@ -97,7 +103,6 @@ export const createRecipe = async (req, res, next) => {
       ingredients,
     } = req.body;
 
-    // ✅ Парсимо масив інгредієнтів (frontend надсилає JSON.stringify)
     const parsedIngredients = JSON.parse(ingredients || "[]");
 
     if (!title || !categoryId || parsedIngredients.length === 0) {
@@ -109,9 +114,13 @@ export const createRecipe = async (req, res, next) => {
       );
     }
 
-    const thumbPath = req.file
-      ? path.join("images", "recipies", req.file.filename)
-      : null;
+    let thumbPath = null;
+    if (req.file) {
+      const { path: oldPath, filename } = req.file;
+      const newPath = path.join("images", "recipies", filename);
+      await fs.rename(oldPath, newPath);
+      thumbPath = `/images/recipies/${filename}`;
+    }
 
     const newRecipe = await Recipe.create({
       title,
@@ -124,7 +133,6 @@ export const createRecipe = async (req, res, next) => {
       thumb: thumbPath,
     });
 
-    // Зберігаємо інгредієнти з мірками у pivot таблицю
     const ingredientsToInsert = parsedIngredients.map((ing) => ({
       recipeId: newRecipe.id,
       ingredientId: ing.id,
@@ -155,6 +163,7 @@ export const deleteOwnRecipe = async (req, res, next) => {
     if (recipe.ownerId !== req.user.id) {
       return next(HttpError(403, "У вас нет прав на удаление этого рецепта"));
     }
+
     await recipe.destroy();
 
     res.status(204).send();
@@ -165,22 +174,14 @@ export const deleteOwnRecipe = async (req, res, next) => {
 
 export const searchRecipes = async (req, res, next) => {
   try {
-    const {
-      categoryId,
-      ingredientId,
-      areaId,
-      page = 1,
-      limit = 10,
-    } = req.query;
+    const { categoryId, ingredientId, areaId, page = 1, limit = 10 } = req.query;
 
     const offset = (Number(page) - 1) * Number(limit);
 
-    // фільтри на полях самої моделі
     const where = {};
     if (categoryId) where.categoryId = categoryId;
     if (areaId) where.areaId = areaId;
 
-    // підключаємо асоціації
     const include = [
       {
         model: Category,
@@ -194,7 +195,6 @@ export const searchRecipes = async (req, res, next) => {
       },
     ];
 
-    // якщо шукаємо по інгредієнту — робимо include з required: true
     if (ingredientId) {
       include.push({
         model: Ingredient,
@@ -233,5 +233,85 @@ export const searchRecipes = async (req, res, next) => {
     });
   } catch (err) {
     next(HttpError(500, err.message));
+  }
+};
+
+export const getOwnRecipes = async (req, res, next) => {
+  return getAllRecipes(req, res, next);
+};
+
+export const addToFavorites = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { id: favoriteId } = req.params;
+
+    const target = await Recipe.findByPk(favoriteId);
+    if (!target) {
+      throw HttpError(404, "Recipe not found");
+    }
+
+    await user.addFavorites(target);
+
+    res.json({ message: `Added recipe ${favoriteId} to favorites` });
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+export const removeFromFavorites = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { id: favoriteId } = req.params;
+
+    const target = await Recipe.findByPk(favoriteId);
+    if (!target) {
+      throw HttpError(404, "Recipe not found");
+    }
+
+    await user.removeFavorites(target);
+
+    res.json({ message: `Removed ${favoriteId} recipe from favorites` });
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+export const getFavorites = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const favorites = await user.getFavorites();
+    res.json(favorites);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+export const getPopular = async (_, res, next) => {
+  try {
+    const popularRecipes = await Recipe.findAll({
+      attributes: {
+        include: [
+          [
+            Sequelize.fn("COUNT", Sequelize.col("favorited.id")),
+            "favoritesCount",
+          ],
+        ],
+      },
+      include: [
+        {
+          model: User,
+          as: "favorited",
+          attributes: [],
+          through: { attributes: [] },
+        },
+      ],
+      group: ["Recipe.id"],
+      having: Sequelize.literal('COUNT("favorited"."id") > 0'),
+      order: [[Sequelize.fn("COUNT", Sequelize.col("favorited.id")), "DESC"]],
+    });
+
+    res.json(popularRecipes);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
   }
 };

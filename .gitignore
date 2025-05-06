@@ -33,4 +33,5 @@ coverage/
 
 tmp/
 temp/
-public/images/avatars/
+postgres_data/
+public/images/avatars/*

@@ -2,6 +2,7 @@ import auth from '../middlewares/auth.js';
 import { Router } from 'express';
 import {
   getAllRecipes,
+  getOwnRecipes,
   getRecipeById,
   createRecipe,
   deleteOwnRecipe,
@@ -127,6 +128,34 @@ router.get("/popular", getPopular);
  *         description: Internal server error
  */
 router.get("/favorites", auth, getFavorites);
+
+/**
+ * @swagger
+ * /api/recipes/own:
+ *   get:
+ *     summary: Get recipes created by the current user
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of recipes created by the authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/own", auth, getOwnRecipes);
 
 /**
  * @swagger

@@ -90,7 +90,7 @@ router.get("/", auth, getAllUsers);
  *         description: Unauthorized
  */
 
-router.get("/current", auth, getCurrentUserInfo);
+router.get("/current_details", auth, getCurrentUserInfo);
 
 /**
  * @swagger

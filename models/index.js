@@ -54,6 +54,13 @@ User.belongsToMany(Recipe, {
   otherKey: "recipeId",
 });
 
+Recipe.belongsToMany(User, {
+  through: Favorite,
+  as: "favorited",
+  foreignKey: "recipeId",
+  otherKey: "userId",
+});
+
 export {
   sequelize,
   User,

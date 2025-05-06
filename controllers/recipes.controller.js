@@ -1,5 +1,6 @@
 import { Recipe, Area, User, Ingredient, Category, RecipeIngredient } from '../models/index.js';
 import HttpError from '../helpers/HttpError.js';
+import { Sequelize } from 'sequelize';
 
 import path from 'path';
 
@@ -209,4 +210,34 @@ export const getFavorites = async (req, res, next) => {
   } catch (err) {
     next(err.status ? err : HttpError(500, err.message));
   }
+};
+
+export const getPopular = async (_, res, next) => {
+  try {
+    const popularRecipes = await Recipe.findAll({
+      attributes: {
+        include: [
+          [
+            Sequelize.fn("COUNT", Sequelize.col("favorited.id")),
+            "favoritesCount",
+          ],
+        ],
+      },
+      include: [
+        {
+          model: User,
+          as: "favorited",
+          attributes: [],
+          through: { attributes: [] },
+        },
+    ],
+      group: ["Recipe.id"],
+      having: Sequelize.literal('COUNT("favorited"."id") > 0'),
+      order: [[Sequelize.fn("COUNT", Sequelize.col("favorited.id")), "DESC"]],
+    });
+
+    res.json(popularRecipes);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+ }
 };

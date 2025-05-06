@@ -9,6 +9,7 @@ import {
   addToFavorites,
   removeFromFavorites,
   getFavorites,
+  getPopular,
 } from "../controllers/recipes.controller.js";
 import upload from "../middlewares/upload.js";
 
@@ -119,6 +120,28 @@ router.get("/own", auth, getOwnRecipes);
 
 /**
  * @swagger
+ * /api/recipes/popular:
+ *   get:
+ *     summary: Get popular recipes
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of popular recipes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/popular", getPopular);
+
+/**
+ * @swagger
  * /api/recipes/favorites:
  *   get:
  *     summary: Get recipes favorited by the current user
@@ -140,6 +163,8 @@ router.get("/own", auth, getOwnRecipes);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
  */
 router.get("/favorites", auth, getFavorites);
 

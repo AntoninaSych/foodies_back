@@ -90,3 +90,13 @@ export const followers = async (req, res, next) => {
     next(err.status ? err : HttpError(500, err.message));
   }
 };
+
+
+export const following = async (req, res, next) => {
+  try {
+    const followings = await req.user.getFollowings();
+    res.json(followings);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};

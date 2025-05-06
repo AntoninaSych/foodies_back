@@ -6,6 +6,7 @@ import {
   unfollowUser,
   changeAvatar,
   followers,
+  following,
 } from "../controllers/users.controller.js";
 import upload from "../middlewares/upload.js";
 
@@ -168,6 +169,32 @@ router.delete("/:id/follow", auth, unfollowUser);
  *               $ref: '#/components/schemas/Error'
  */
 router.get("/followers", auth, followers);
+
+/**
+ * @swagger
+ * /api/users/following:
+ *   get:
+ *     summary: Get current user's followings
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of users who the current user follows
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/following", auth, following);
 
 /**
  * @swagger

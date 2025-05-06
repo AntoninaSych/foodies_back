@@ -30,8 +30,7 @@ app.use(express.static("public"));
 const PORT = process.env.PORT || 5000;
 const BASE_URL = process.env.APP_URL || `http://localhost:${PORT}`;
 
-// app.use('/avatars', express.static(path.join(__dirname, 'public/avatars')));
-
+app.use('/avatars', express.static(path.join(__dirname, 'public/images/avatars')));
 app.use("/api/areas", areasRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/ingredients", ingredientsRouter);

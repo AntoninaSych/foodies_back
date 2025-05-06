@@ -50,6 +50,9 @@ export const register = async (req, res, next) => {
 
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.PORT || 3000;
+    const imagesDir = path.resolve('images', 'avatars');
+
+    await fs.mkdir(imagesDir, { recursive: true });
     const avatarURL = `http://${host}:${port}/public/images/avatars/${avatarFilename}`;
 
     const newUser = await User.create({

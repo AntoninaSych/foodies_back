@@ -1,7 +1,7 @@
 import { Recipe, Area, User, Ingredient, Category, RecipeIngredient } from '../models/index.js';
 import HttpError from '../helpers/HttpError.js';
 import { Sequelize } from 'sequelize';
-
+import fs from 'fs/promises';
 import path from 'path';
 
 export const getAllRecipes = async (req, res, next) => {
@@ -95,22 +95,22 @@ export const createRecipe = async (req, res, next) => {
             ingredients,
         } = req.body;
 
-        // ✅ Парсимо масив інгредієнтів (frontend надсилає JSON.stringify)
         const parsedIngredients = JSON.parse(ingredients || '[]');
 
         if (!title || !categoryId || parsedIngredients.length === 0) {
             return next(HttpError(400, 'Title, category and at least one ingredient are required.'));
         }
 
-        const thumbPath = null;
+        let thumbPath = null;
         if (req.file) {
             const { path: oldPath, filename } = req.file;
-            const newPath = path.join('images', 'recipies', filename);
-            await fs.rename(oldPath, newPath, (error) => {
-                if (error) {
-                    throw error;
-                }
-            });
+            const imagesDir = path.resolve('images', 'recipies');
+            const newPath = path.join(imagesDir, filename);
+
+            await fs.mkdir(imagesDir, { recursive: true });
+
+            await fs.rename(oldPath, newPath);
+
             thumbPath = `/images/recipies/${filename}`;
         }
 
@@ -125,7 +125,6 @@ export const createRecipe = async (req, res, next) => {
             thumb: thumbPath,
         });
 
-        // Зберігаємо інгредієнти з мірками у pivot таблицю
         const ingredientsToInsert = parsedIngredients.map(ing => ({
             recipeId: newRecipe.id,
             ingredientId: ing.id,
@@ -141,6 +140,7 @@ export const createRecipe = async (req, res, next) => {
         next(HttpError(500, error.message));
     }
 };
+
 
 export const deleteOwnRecipe = async (req, res, next) => {
     try {

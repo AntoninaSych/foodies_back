@@ -6,8 +6,10 @@ import {
   getRecipeById,
   createRecipe,
   deleteOwnRecipe,
+  addToFavorites,
+  removeFromFavorites,
 } from "../controllers/recipes.controller.js";
-import upload from '../middlewares/upload.js';
+import upload from "../middlewares/upload.js";
 
 const router = Router();
 
@@ -84,7 +86,7 @@ const router = Router();
  *                         type: string
  *                         example: "123e4567-e89b-12d3-a456-426614174000"
  */
-router.get('/', getAllRecipes);
+router.get("/", getAllRecipes);
 
 /**
  * @swagger
@@ -221,7 +223,7 @@ router.get("/own", auth, getOwnRecipes);
  *                   type: string
  *                   example: "Something went wrong"
  */
-router.get('/:id', getRecipeById);
+router.get("/:id", getRecipeById);
 
 /**
  * @swagger
@@ -292,8 +294,7 @@ router.get('/:id', getRecipeById);
  *       500:
  *         description: Internal server error
  */
-router.post('/', auth, upload.single('thumb'), createRecipe);
-
+router.post("/", auth, upload.single("thumb"), createRecipe);
 
 /**
  * @swagger
@@ -321,6 +322,94 @@ router.post('/', auth, upload.single('thumb'), createRecipe);
  *       500:
  *         description: Внутренняя ошибка сервера
  */
-router.delete('/:id', auth, deleteOwnRecipe);
+router.delete("/:id", auth, deleteOwnRecipe);
+
+/**
+ * @swagger
+ * /api/recipes/{id}/favorite:
+ *   post:
+ *     summary: Add a recipe to favorites
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID of the recipe to add to favorites
+ *     responses:
+ *       200:
+ *         description: Recipe added to favorites
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Added recipe 123e4567-e89b-12d3-a456-426614174000 to favorites
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/:id/favorite", auth, addToFavorites);
+
+/**
+ * @swagger
+ * /api/recipes/{id}/unfavorite:
+ *   post:
+ *     summary: Remove a recipe from favorites
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID of the recipe to remove from favorites
+ *     responses:
+ *       200:
+ *         description: Recipe removed from favorites
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Removed recipe 123e4567-e89b-12d3-a456-426614174000 from favorites
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Recipe not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/:id/unfavorite", auth, removeFromFavorites);
 
 export default router;

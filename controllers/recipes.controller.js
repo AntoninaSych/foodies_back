@@ -104,14 +104,13 @@ export const createRecipe = async (req, res, next) => {
         let thumbPath = null;
         if (req.file) {
             const { path: oldPath, filename } = req.file;
-            const imagesDir = path.resolve('images', 'recipies');
-            const newPath = path.join(imagesDir, filename);
+            const imagesDir = path.resolve('public', 'images', 'recipies');            const newPath = path.join(imagesDir, filename);
 
             await fs.mkdir(imagesDir, { recursive: true });
 
             await fs.rename(oldPath, newPath);
 
-            thumbPath = `/images/recipies/${filename}`;
+            thumbPath = `public/images/recipies/${filename}`;
         }
 
         const newRecipe = await Recipe.create({

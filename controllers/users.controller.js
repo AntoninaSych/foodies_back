@@ -82,6 +82,26 @@ export const changeAvatar = async (req, res, next) => {
   }
 };
 
+export const followers = async (req, res, next) => {
+  try {
+    const followers = await req.user.getFollowers();
+    res.json(followers);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+
+export const following = async (req, res, next) => {
+  try {
+    const followings = await req.user.getFollowings();
+    res.json(followings);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+
 
 export const getCurrent = async (req, res) => {
   const { id, name, email, avatarURL } = req.user;

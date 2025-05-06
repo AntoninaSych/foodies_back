@@ -33,6 +33,7 @@ coverage/
 
 tmp/
 temp/
+postgres_data/
 # all avatars
 public/images/avatars/* 
 # except default avatar

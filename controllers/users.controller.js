@@ -4,7 +4,9 @@ import { fileURLToPath } from "url";
 import path from "path";
 import createDirIfNotExist from "../helpers/createDirIfNotExist.js";
 import fs from "fs/promises";
-
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 export const getAllUsers = async (req, res, next) => {
   try {
     const users = await User.findAll();
@@ -86,8 +88,6 @@ export const followUser = async (req, res, next) => {
     if (!target) {
       throw HttpError(404, "User to follow not found");
     }
-
-    // ← here is the magic: no Follow model, just the mixin
     await follower.addFollowings(target);
 
     res.json({ message: `Now following user ${followingId}` });
@@ -121,15 +121,18 @@ export const unfollowUser = async (req, res, next) => {
 export const changeAvatar = async (req, res, next) => {
   try {
     if (!req.file) {
-      res.status(400).json({ message: "File upload error" });
+      return res.status(400).json({ message: "File upload error" });
     }
+
     const { path: tempPath, filename } = req.file;
     const avatarsDir = path.join(__dirname, "../public/images/avatars");
+
     await createDirIfNotExist(avatarsDir);
+
     const resultPath = path.join(avatarsDir, filename);
     await fs.rename(tempPath, resultPath);
 
-    const avatarURL = `/avatars/${filename}`;
+    const avatarURL = `${req.protocol}://${req.get('host')}/public`+`/images/avatars/${filename}`;
     req.user.avatarURL = avatarURL;
     await req.user.save();
 
@@ -137,4 +140,30 @@ export const changeAvatar = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+export const followers = async (req, res, next) => {
+  try {
+    const followers = await req.user.getFollowers();
+    res.json(followers);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+
+export const following = async (req, res, next) => {
+  try {
+    const followings = await req.user.getFollowings();
+    res.json(followings);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+
+
+export const getCurrent = async (req, res) => {
+  const { id, name, email, avatarURL } = req.user;
+  res.status(200).json({ id, name, email, avatarURL });
 };

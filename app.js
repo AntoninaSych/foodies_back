@@ -6,7 +6,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
-import authRouter from "./routes/auth.routes.js";
 import areasRouter from "./routes/areas.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import ingredientsRouter from "./routes/ingredients.routes.js";
@@ -23,7 +22,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use("/public", express.static(path.join(__dirname, "public")));
-app.use("/avatars", express.static(path.join(__dirname, "public/avatars")));
+app.use(
+  "/avatars",
+  express.static(path.join(__dirname, "public/images/avatars"))
+);
 app.use(logger("dev"));
 app.use(cors());
 app.use(express.json());
@@ -36,7 +38,6 @@ app.use("/api/ingredients", ingredientsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/recipes", recipesRouter);
 app.use("/api/testimonials", testimonialsRouter);
-app.use("/api/auth", authRouter);
 
 const swaggerOptions = {
   definition: {

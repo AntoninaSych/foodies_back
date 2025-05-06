@@ -4,11 +4,15 @@ import {
   getAllUsers,
   followUser,
   unfollowUser,
+  getCurrent,
   changeAvatar,
   followers,
   following,
 } from "../controllers/users.controller.js";
 import upload from "../middlewares/upload.js";
+import {login, logout, register} from "../controllers/authController.js";
+
+
 
 const router = Router();
 
@@ -235,4 +239,118 @@ router.get("/following", auth, following);
  */
 router.patch("/avatars", auth, upload.single("avatar"), changeAvatar);
 
+
+
+/**
+ * @swagger
+ * /api/users/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: Email already in use
+ */
+router.post("/register", register);
+
+/**
+ * @swagger
+ * /api/users/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: admin@foodies.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
+router.post("/login", login);
+
+/**
+ * @swagger
+ * /api/users/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         description: Successfully logged out
+ *       401:
+ *         description: Unauthorized
+ */
+router.post("/logout", auth, logout);
+
+
+/**
+ * @swagger
+ * /api/users/current:
+ *   get:
+ *     summary: Get current logged-in user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 avatarURL:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/current", auth, getCurrent);
 export default router;

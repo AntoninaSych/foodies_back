@@ -100,3 +100,10 @@ export const following = async (req, res, next) => {
     next(err.status ? err : HttpError(500, err.message));
   }
 };
+
+
+
+export const getCurrent = async (req, res) => {
+  const { id, name, email, avatarURL } = req.user;
+  res.status(200).json({ id, name, email, avatarURL });
+};

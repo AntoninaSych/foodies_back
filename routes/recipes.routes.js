@@ -1,6 +1,12 @@
 import auth from '../middlewares/auth.js';
 import { Router } from 'express';
-import { getAllRecipes, getRecipeById, createRecipe, deleteOwnRecipe } from '../controllers/recipes.controller.js';
+import {
+  getAllRecipes,
+  getOwnRecipes,
+  getRecipeById,
+  createRecipe,
+  deleteOwnRecipe,
+} from "../controllers/recipes.controller.js";
 import upload from '../middlewares/upload.js';
 
 const router = Router();
@@ -79,6 +85,34 @@ const router = Router();
  *                         example: "123e4567-e89b-12d3-a456-426614174000"
  */
 router.get('/', getAllRecipes);
+
+/**
+ * @swagger
+ * /api/recipes/own:
+ *   get:
+ *     summary: Get recipes created by the current user
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of recipes created by the authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/own", auth, getOwnRecipes);
 
 /**
  * @swagger

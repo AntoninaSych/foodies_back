@@ -8,6 +8,7 @@ import Recipe from './Recipe.js';
 import Testimonial from './Testimonial.js';
 import RecipeIngredient from './RecipeIngredient.js';
 import Follow from "./follow.js";
+import Favorite from "./favorite.js";
 
 
 User.hasMany(Recipe, { foreignKey: 'ownerId', as: 'recipes' });
@@ -42,8 +43,22 @@ Recipe.belongsToMany(Ingredient, {
 
 Ingredient.belongsToMany(Recipe, {
   through: RecipeIngredient,
-  foreignKey: 'ingredientId',
-  otherKey: 'recipeId',
+  foreignKey: "ingredientId",
+  otherKey: "recipeId",
+});
+
+User.belongsToMany(Recipe, {
+  through: Favorite,
+  as: "favorites",
+  foreignKey: "userId",
+  otherKey: "recipeId",
+});
+
+Recipe.belongsToMany(User, {
+  through: Favorite,
+  as: "favorited",
+  foreignKey: "recipeId",
+  otherKey: "userId",
 });
 
 export {
@@ -56,4 +71,5 @@ export {
   Testimonial,
   RecipeIngredient,
   Follow,
+  Favorite,
 };

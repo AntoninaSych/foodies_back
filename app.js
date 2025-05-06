@@ -6,7 +6,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
-import authRouter from "./routes/auth.routes.js";
 import areasRouter from "./routes/areas.routes.js";
 import categoriesRouter from "./routes/categories.routes.js";
 import ingredientsRouter from "./routes/ingredients.routes.js";
@@ -37,7 +36,7 @@ app.use("/api/ingredients", ingredientsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/recipes", recipesRouter);
 app.use("/api/testimonials", testimonialsRouter);
-app.use("/api/auth", authRouter);
+
 
 const swaggerOptions = {
   definition: {

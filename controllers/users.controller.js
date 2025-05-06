@@ -81,3 +81,9 @@ export const changeAvatar = async (req, res, next) => {
     next(err);
   }
 };
+
+
+export const getCurrent = async (req, res) => {
+  const { id, name, email, avatarURL } = req.user;
+  res.status(200).json({ id, name, email, avatarURL });
+};

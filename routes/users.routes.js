@@ -4,7 +4,8 @@ import {
   getAllUsers,
   followUser,
   unfollowUser,
-  changeAvatar
+  changeAvatar,
+  getCurrent
 } from "../controllers/users.controller.js";
 import upload from "../middlewares/upload.js";
 import {login, logout, register} from "../controllers/authController.js";
@@ -268,4 +269,34 @@ router.post("/login", login);
  *         description: Unauthorized
  */
 router.post("/logout", auth, logout);
+
+
+/**
+ * @swagger
+ * /api/users/current:
+ *   get:
+ *     summary: Get current logged-in user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 avatarURL:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/current", auth, getCurrent);
 export default router;

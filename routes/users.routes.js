@@ -4,11 +4,10 @@ import {
   getAllUsers,
   followUser,
   unfollowUser,
-  changeAvatar
+  changeAvatar,
+  followers,
 } from "../controllers/users.controller.js";
 import upload from "../middlewares/upload.js";
-
-
 
 const router = Router();
 
@@ -45,7 +44,7 @@ const router = Router();
  *                     type: string
  */
 
-router.get('/', auth, getAllUsers);
+router.get("/", auth, getAllUsers);
 
 /**
  * @swagger
@@ -142,7 +141,33 @@ router.post("/:id/follow", auth, followUser);
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.delete('/:id/follow', auth, unfollowUser);
+router.delete("/:id/follow", auth, unfollowUser);
+
+/**
+ * @swagger
+ * /api/users/followers:
+ *   get:
+ *     summary: Get current user's followers
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of users who follow the current user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/followers", auth, followers);
 
 /**
  * @swagger

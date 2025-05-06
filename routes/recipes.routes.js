@@ -8,6 +8,7 @@ import {
   deleteOwnRecipe,
   addToFavorites,
   removeFromFavorites,
+  getFavorites,
 } from "../controllers/recipes.controller.js";
 import upload from "../middlewares/upload.js";
 
@@ -115,6 +116,32 @@ router.get("/", getAllRecipes);
  *         description: Internal server error
  */
 router.get("/own", auth, getOwnRecipes);
+
+/**
+ * @swagger
+ * /api/recipes/favorites:
+ *   get:
+ *     summary: Get recipes favorited by the current user
+ *     tags: [Recipes]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of recipes favorited by the authenticated user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Recipe'
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/favorites", auth, getFavorites);
 
 /**
  * @swagger
@@ -371,7 +398,7 @@ router.post("/:id/favorite", auth, addToFavorites);
 /**
  * @swagger
  * /api/recipes/{id}/unfavorite:
- *   post:
+ *   delete:
  *     summary: Remove a recipe from favorites
  *     tags: [Recipes]
  *     security:
@@ -410,6 +437,6 @@ router.post("/:id/favorite", auth, addToFavorites);
  *       500:
  *         description: Internal server error
  */
-router.post("/:id/unfavorite", auth, removeFromFavorites);
+router.delete("/:id/favorite", auth, removeFromFavorites);
 
 export default router;

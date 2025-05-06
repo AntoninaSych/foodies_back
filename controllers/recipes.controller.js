@@ -200,3 +200,13 @@ export const removeFromFavorites = async (req, res, next) => {
     next(err.status ? err : HttpError(500, err.message));
   }
 };
+
+export const getFavorites = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const favorites = await user.getFavorites();
+    res.json(favorites);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};

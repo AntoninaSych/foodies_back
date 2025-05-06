@@ -104,11 +104,6 @@ export const login = async (req, res, next) => {
   }
 };
 
-export const getCurrent = async (req, res) => {
-  const { id, name, email, avatarURL } = req.user;
-  res.status(200).json({ id, name, email, avatarURL });
-};
-
 export const logout = async (req, res, next) => {
   try {
     await req.user.update({ token: null });

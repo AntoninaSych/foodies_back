@@ -8,7 +8,7 @@ export const getAllRecipes = async (req, res, next) => {
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
 
-        const recipes = await Recipe.findAll({
+        const options = {
             include: [
                 {
                     model: Area,
@@ -29,8 +29,13 @@ export const getAllRecipes = async (req, res, next) => {
             offset,
             limit: parseInt(limit),
             order: [['createdAt', 'DESC']],
-        });
+        };
 
+        if (req.user) {
+            options.where = { ownerId: req.user.id };
+        }
+
+        const recipes = await Recipe.findAll(options);
         res.json(recipes);
     } catch (error) {
         next(HttpError(500, error.message));
@@ -146,4 +151,8 @@ export const deleteOwnRecipe = async (req, res, next) => {
     } catch (error) {
         next(HttpError(500, error.message));
     }
+};
+
+export const getOwnRecipes = async (req, res, next) => {
+  return getAllRecipes(req, res, next);
 };

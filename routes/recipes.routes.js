@@ -295,6 +295,7 @@ router.get("/:id", getRecipeById);
  *               - title
  *               - categoryId
  *               - ingredients
+ *               - areaId
  *             properties:
  *               title:
  *                 type: string

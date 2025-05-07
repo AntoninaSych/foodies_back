@@ -42,26 +42,6 @@ module.exports = {
         continue;
       }
 
-      let thumb = null;
-      if (recipe.thumb) {
-        try {
-          const filename = path.basename(new URL(recipe.thumb).pathname);
-          const localPath = path.join(__dirname, '../public/images/recipies', filename);
-          if (!fs.existsSync(localPath)) {
-            const writer = fs.createWriteStream(localPath);
-            const response = await axios({ url: recipe.thumb, method: 'GET', responseType: 'stream' });
-            await new Promise((resolve, reject) => {
-              response.data.pipe(writer);
-              writer.on('finish', resolve);
-              writer.on('error', reject);
-            });
-          }
-          thumb = `images/recipies/${filename}`;
-        } catch (e) {
-          console.warn(`⚠️ Could not download image: ${recipe.thumb}`);
-        }
-      }
-
       recipesMap.push({ title: recipe.title.trim(), newId: id });
 
       recipesData.push({
@@ -69,7 +49,7 @@ module.exports = {
         title: recipe.title,
         description: recipe.description || null,
         instructions: recipe.instructions || null,
-        thumb,
+        thumb:recipe.thumb,
         time: recipe.time || null,
         areaId,
         categoryId,
@@ -81,8 +61,6 @@ module.exports = {
 
     await queryInterface.bulkInsert('recipes', recipesData);
 
-    const tempDir = path.resolve(__dirname, '../temp');
-    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
 
     fs.writeFileSync(
         path.join(tempDir, 'recipes-map.json'),

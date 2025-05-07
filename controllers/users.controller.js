@@ -1,18 +1,76 @@
-import { User } from '../models/index.js';
-import HttpError from '../helpers/HttpError.js';
+import { Recipe, User, Follow, Favorite } from "../models/index.js";
+import HttpError from "../helpers/HttpError.js";
+import { fileURLToPath } from "url";
 import path from "path";
 import createDirIfNotExist from "../helpers/createDirIfNotExist.js";
 import fs from "fs/promises";
-import { fileURLToPath } from "url";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const defaultAvatar = "/public/images/avatars/default.png";
+
 export const getAllUsers = async (req, res, next) => {
-    try {
-        const users = await User.findAll();
-        res.json(users);
-    } catch (error) {
-        next(HttpError(500, error.message));
+  try {
+    const users = await User.findAll();
+    res.json(users);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+export const getCurrentUserInfo = async (req, res, next) => {
+  try {
+    const { id, name, email, avatarURL } = req.user; // user comes from auth
+    let fullAvatarUrl = avatarURL;
+    if (!avatarURL) fullAvatarUrl = path.join(__dirname, defaultAvatar);
+    else if (!avatarURL.startsWith("http")) {
+      fullAvatarUrl = path.join(__dirname, avatarURL);
     }
+    console.log(fullAvatarUrl);
+    const createdRecipes = await Recipe.count({ where: { ownerId: id } });
+    const favorites = await req.user.getFavorites();
+    const followers = await req.user.getFollowers();
+    const following = await req.user.getFollowings();
+    res.status(200).json({
+      user: { id, name, email, avatarURL: fullAvatarUrl },
+      createdRecipes,
+      favorites: favorites.length,
+      followers: followers.length,
+      following: following.length,
+    });
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
+export const getUserInfo = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) res.status(404).json("User not found");
+    let avatarURL = user.avatarURL;
+    if (!avatarURL) avatarURL = path.join(__dirname, defaultAvatar);
+    else if (!avatarURL.startsWith("http")) {
+      avatarURL = path.join(__dirname, avatarURL);
+    }
+    console.log(avatarURL);
+    const createdRecipes = await Recipe.count({ where: { ownerId: id } });
+    const favorites = await user.getFavorites();
+    const followers = await user.getFollowers();
+    res.status(200).json({
+      user: {
+        id,
+        name: user.name,
+        email: user.email,
+        avatarURL,
+      },
+      createdRecipes,
+      favorites: favorites.length,
+      followers: followers.length,
+    });
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
 };
 
 export const followUser = async (req, res, next) => {
@@ -72,7 +130,9 @@ export const changeAvatar = async (req, res, next) => {
     const resultPath = path.join(avatarsDir, filename);
     await fs.rename(tempPath, resultPath);
 
-    const avatarURL = `${req.protocol}://${req.get('host')}/public`+`/images/avatars/${filename}`;
+    const avatarURL =
+      `${req.protocol}://${req.get("host")}/public` +
+      `/images/avatars/${filename}`;
     req.user.avatarURL = avatarURL;
     await req.user.save();
 
@@ -91,7 +151,6 @@ export const followers = async (req, res, next) => {
   }
 };
 
-
 export const following = async (req, res, next) => {
   try {
     const followings = await req.user.getFollowings();
@@ -100,8 +159,6 @@ export const following = async (req, res, next) => {
     next(err.status ? err : HttpError(500, err.message));
   }
 };
-
-
 
 export const getCurrent = async (req, res) => {
   const { id, name, email, avatarURL } = req.user;

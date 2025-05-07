@@ -22,6 +22,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use("/public", express.static(path.join(__dirname, "public")));
+app.use(
+  "/avatars",
+  express.static(path.join(__dirname, "public/images/avatars"))
+);
 app.use(logger("dev"));
 app.use(cors());
 app.use(express.json());
@@ -30,14 +34,12 @@ app.use(express.static("public/images/recipies"));
 const PORT = process.env.PORT || 5000;
 const BASE_URL = process.env.APP_URL || `http://localhost:${PORT}`;
 
-app.use('/avatars', express.static(path.join(__dirname, 'public/images/avatars')));
 app.use("/api/areas", areasRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/ingredients", ingredientsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/recipes", recipesRouter);
 app.use("/api/testimonials", testimonialsRouter);
-
 
 const swaggerOptions = {
   definition: {

@@ -167,14 +167,10 @@ export const deleteOwnRecipe = async (req, res, next) => {
 
 export const searchRecipes = async (req, res, next) => {
   try {
-    const { categoryId, ingredientId, areaId, page = 1, limit = 10 } = req.query;
-
+    const { category, ingredient, area, page = 1, limit = 10 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
     const where = {};
-    if (categoryId) where.categoryId = categoryId;
-    if (areaId) where.areaId = areaId;
-
     const include = [
       {
         model: Category,
@@ -188,11 +184,71 @@ export const searchRecipes = async (req, res, next) => {
       },
     ];
 
-    if (ingredientId) {
+    // Пошук по назві категорії (нижній регістр)
+    if (category) {
+      const foundCategory = await Category.findOne({
+        where: Sequelize.where(
+          Sequelize.fn("LOWER", Sequelize.col("name")),
+          category.toLowerCase()
+        ),
+      });
+      if (foundCategory) {
+        where.categoryId = foundCategory.id;
+      } else {
+        return res.json({
+          total: 0,
+          page: Number(page),
+          totalPages: 0,
+          limit: Number(limit),
+          recipes: [],
+        });
+      }
+    }
+
+    // Пошук по назві регіону (area)
+    if (area) {
+      const foundArea = await Area.findOne({
+        where: Sequelize.where(
+          Sequelize.fn("LOWER", Sequelize.col("name")),
+          area.toLowerCase()
+        ),
+      });
+      if (foundArea) {
+        where.areaId = foundArea.id;
+      } else {
+        return res.json({
+          total: 0,
+          page: Number(page),
+          totalPages: 0,
+          limit: Number(limit),
+          recipes: [],
+        });
+      }
+    }
+
+    // Пошук по інгредієнту (назва, нижній регістр)
+    if (ingredient) {
+      const foundIngredient = await Ingredient.findOne({
+        where: Sequelize.where(
+          Sequelize.fn("LOWER", Sequelize.col("name")),
+          ingredient.toLowerCase()
+        ),
+      });
+
+      if (!foundIngredient) {
+        return res.json({
+          total: 0,
+          page: Number(page),
+          totalPages: 0,
+          limit: Number(limit),
+          recipes: [],
+        });
+      }
+
       include.push({
         model: Ingredient,
         as: "ingredients",
-        where: { id: ingredientId },
+        where: { id: foundIngredient.id },
         attributes: ["id", "name", "thumb"],
         through: { attributes: [] },
         required: true,

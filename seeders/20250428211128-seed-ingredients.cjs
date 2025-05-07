@@ -14,7 +14,7 @@ module.exports = {
       return {
         id: newId,
         name: ingredient.name,
-        thumb: ingredient.thumb,
+        thumb: ingredient.img,
         desc: ingredient.desc,
       };
     });

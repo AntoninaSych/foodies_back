@@ -3,8 +3,13 @@
 const recipesDataRaw = require('../db/source/recipes.json');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
+const fsp = require('fs/promises');
 const path = require('path');
 const axios = require('axios');
+
+const host = process.env.HOST || 'localhost';
+const port = process.env.PORT || 3000;
+const imagesDir = path.resolve(__dirname, '../public/images/recipies');
 
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -14,13 +19,13 @@ module.exports = {
     );
 
     if (!user) throw new Error('❌ No users found. Please seed users first.');
-
     const ownerId = user.id;
 
     const areas = await queryInterface.sequelize.query(
         'SELECT id, name FROM areas',
         { type: Sequelize.QueryTypes.SELECT }
     );
+
     const categories = await queryInterface.sequelize.query(
         'SELECT id, name FROM categories',
         { type: Sequelize.QueryTypes.SELECT }
@@ -28,6 +33,8 @@ module.exports = {
 
     const areaMap = Object.fromEntries(areas.map(a => [a.name.toLowerCase().trim(), a.id]));
     const categoryMap = Object.fromEntries(categories.map(c => [c.name.toLowerCase().trim(), c.id]));
+
+    await fsp.mkdir(imagesDir, { recursive: true });
 
     const recipesData = [];
     const recipesMap = [];
@@ -43,23 +50,34 @@ module.exports = {
       }
 
       let thumb = null;
+
       if (recipe.thumb) {
         try {
           const filename = path.basename(new URL(recipe.thumb).pathname);
-          const localPath = path.join(__dirname, '../public/images/recipies', filename);
+          const localPath = path.join(imagesDir, filename);
+
           if (!fs.existsSync(localPath)) {
-            const writer = fs.createWriteStream(localPath);
-            const response = await axios({ url: recipe.thumb, method: 'GET', responseType: 'stream' });
+            const response = await axios({
+              url: encodeURI(recipe.thumb),
+              method: 'GET',
+              responseType: 'stream',
+            });
+
             await new Promise((resolve, reject) => {
+              const writer = fs.createWriteStream(localPath);
               response.data.pipe(writer);
               writer.on('finish', resolve);
               writer.on('error', reject);
             });
           }
-          thumb = `images/recipies/${filename}`;
+
+          thumb = `http://${host}:${port}/public/images/recipies/${filename}`;
         } catch (e) {
           console.warn(`⚠️ Could not download image: ${recipe.thumb}`);
+          thumb = `http://${host}:${port}/public/images/recipies/default.jpg`;
         }
+      } else {
+        thumb = `http://${host}:${port}/public/images/recipies/default.jpg`;
       }
 
       recipesMap.push({ title: recipe.title.trim(), newId: id });

@@ -36,7 +36,10 @@ export const getAllRecipes = async (req, res, next) => {
             options.where = { ownerId: req.user.id };
         }
 
+
         const recipes = await Recipe.findAll(options);
+
+
         res.json(recipes);
     } catch (error) {
         next(HttpError(500, error.message));
@@ -109,8 +112,9 @@ export const createRecipe = async (req, res, next) => {
             await fs.mkdir(imagesDir, { recursive: true });
 
             await fs.rename(oldPath, newPath);
-
-            thumbPath = `public/images/recipies/${filename}`;
+            const host = process.env.DB_HOST || 'localhost';
+            const port = process.env.PORT || 3000;
+            thumbPath = `http://${host}:${port}/public/images/recipies/${filename}`;
         }
 
         const newRecipe = await Recipe.create({

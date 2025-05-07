@@ -26,27 +26,24 @@ const router = Router();
  * @swagger
  * /api/recipes/search:
  *   get:
- *     summary: Search recipes by category, ingredient and area with pagination
+ *     summary: Search recipes by category name, ingredient name, and area name with pagination
  *     tags: [Recipes]
  *     parameters:
  *       - in: query
- *         name: categoryId
+ *         name: category
  *         schema:
  *           type: string
- *           format: uuid
- *         description: Filter by category ID
+ *         description: Filter by category name (case-insensitive)
  *       - in: query
- *         name: ingredientId
+ *         name: ingredient
  *         schema:
  *           type: string
- *           format: uuid
- *         description: Filter by ingredient ID
+ *         description: Filter by ingredient name (case-insensitive)
  *       - in: query
- *         name: areaId
+ *         name: area
  *         schema:
  *           type: string
- *           format: uuid
- *         description: Filter by area ID
+ *         description: Filter by area name (case-insensitive)
  *       - in: query
  *         name: page
  *         schema:
@@ -79,7 +76,7 @@ const router = Router();
  *                 recipes:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Recipe'  # припустимо, у вас є цей реф
+ *                     $ref: '#/components/schemas/Recipe'
  */
 router.get('/search', searchRecipes);
 

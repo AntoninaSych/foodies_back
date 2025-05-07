@@ -10,56 +10,52 @@ import RecipeIngredient from "./RecipeIngredient.js";
 import Follow from "./follow.js";
 import Favorite from "./favorite.js";
 
-User.hasMany(Recipe, { foreignKey: "ownerId", as: "recipes" });
-Recipe.belongsTo(User, { foreignKey: "ownerId", as: "owner" });
-Recipe.belongsTo(Category, { foreignKey: "categoryId", as: "category" });
+// User ↔ Recipe
+User.hasMany(Recipe, { foreignKey: 'ownerId', as: 'recipes' });
+Recipe.belongsTo(User, { foreignKey: 'ownerId', as: 'owner' });
 
-Area.hasMany(Recipe, { foreignKey: "areaId", as: "recipes" });
-Recipe.belongsTo(Area, { foreignKey: "areaId", as: "area" });
+// Recipe ↔ Category
+Recipe.belongsTo(Category, { foreignKey: 'categoryId', as: 'category' });
+Category.hasMany(Recipe, { foreignKey: 'categoryId', as: 'recipes' });
 
+// Recipe ↔ Area
+Recipe.belongsTo(Area, { foreignKey: 'areaId', as: 'area' });
+Area.hasMany(Recipe, { foreignKey: 'areaId', as: 'recipes' });
+
+// Recipe ↔ Ingredient (many-to-many)
 Recipe.belongsToMany(Ingredient, {
   through: RecipeIngredient,
+  as: "ingredients",
   foreignKey: "recipeId",
   otherKey: "ingredientId",
 });
 Ingredient.belongsToMany(Recipe, {
   through: RecipeIngredient,
+  as: "recipes",
   foreignKey: "ingredientId",
   otherKey: "recipeId",
 });
 
+// User ↔ User (followers/followings)
 User.belongsToMany(User, {
   through: Follow,
   as: "followings",
   foreignKey: "followerId",
   otherKey: "followingId",
 });
-
 User.belongsToMany(User, {
   through: Follow,
-  as: "followers", // ті, хто слідкує за мною
+  as: "followers",
   foreignKey: "followingId",
   otherKey: "followerId",
 });
 
-Recipe.belongsToMany(Ingredient, {
-  through: RecipeIngredient,
-  foreignKey: "recipeId",
-  otherKey: "ingredientId",
-});
-
-Ingredient.belongsToMany(Recipe, {
-  through: RecipeIngredient,
-  foreignKey: "ingredientId",
-  otherKey: "recipeId",
-});
-
+// User ↔ Recipe (favorites)
 User.belongsToMany(Recipe, {
   through: Favorite,
   foreignKey: "userId",
   otherKey: "recipeId",
 });
-
 Recipe.belongsToMany(User, {
   through: Favorite,
   foreignKey: "recipeId",

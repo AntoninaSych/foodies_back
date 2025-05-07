@@ -165,6 +165,70 @@ export const deleteOwnRecipe = async (req, res, next) => {
     }
 };
 
+export const searchRecipes = async (req, res, next) => {
+  try {
+    const { categoryId, ingredientId, areaId, page = 1, limit = 10 } = req.query;
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const where = {};
+    if (categoryId) where.categoryId = categoryId;
+    if (areaId) where.areaId = areaId;
+
+    const include = [
+      {
+        model: Category,
+        as: "category",
+        attributes: ["id", "name"],
+      },
+      {
+        model: Area,
+        as: "area",
+        attributes: ["id", "name"],
+      },
+    ];
+
+    if (ingredientId) {
+      include.push({
+        model: Ingredient,
+        as: "ingredients",
+        where: { id: ingredientId },
+        attributes: ["id", "name", "thumb"],
+        through: { attributes: [] },
+        required: true,
+      });
+    } else {
+      include.push({
+        model: Ingredient,
+        as: "ingredients",
+        attributes: ["id", "name", "thumb"],
+        through: { attributes: [] },
+      });
+    }
+
+    const { count, rows } = await Recipe.findAndCountAll({
+      where,
+      include,
+      distinct: true,
+      offset,
+      limit: Number(limit),
+      order: [["createdAt", "DESC"]],
+    });
+
+    const totalPages = Math.ceil(count / Number(limit));
+
+    res.json({
+      total: count,
+      page: Number(page),
+      totalPages,
+      limit: Number(limit),
+      recipes: rows,
+    });
+  } catch (err) {
+    next(HttpError(500, err.message));
+  }
+};
+
 export const getOwnRecipes = async (req, res, next) => {
   return getAllRecipes(req, res, next);
 }

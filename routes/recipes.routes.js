@@ -2,16 +2,16 @@ import auth from '../middlewares/auth.js';
 import { Router } from 'express';
 import {
   getAllRecipes,
-  getOwnRecipes,
   getRecipeById,
   createRecipe,
   deleteOwnRecipe,
+  searchRecipes,
+  getFavorites,
   addToFavorites,
   removeFromFavorites,
-  getFavorites,
   getPopular,
-} from "../controllers/recipes.controller.js";
-import upload from "../middlewares/upload.js";
+} from '../controllers/recipes.controller.js';
+import upload from '../middlewares/upload.js';
 
 const router = Router();
 
@@ -21,6 +21,67 @@ const router = Router();
  *   name: Recipes
  *   description: API endpoints for managing recipes
  */
+
+/**
+ * @swagger
+ * /api/recipes/search:
+ *   get:
+ *     summary: Search recipes by category, ingredient and area with pagination
+ *     tags: [Recipes]
+ *     parameters:
+ *       - in: query
+ *         name: categoryId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by category ID
+ *       - in: query
+ *         name: ingredientId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by ingredient ID
+ *       - in: query
+ *         name: areaId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by area ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Items per page
+ *     responses:
+ *       200:
+ *         description: Paginated list of recipes matching filters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of matching recipes
+ *                 page:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 recipes:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Recipe'  # припустимо, у вас є цей реф
+ */
+router.get('/search', searchRecipes);
 
 /**
  * @swagger
@@ -90,33 +151,6 @@ const router = Router();
  */
 router.get("/", getAllRecipes);
 
-/**
- * @swagger
- * /api/recipes/own:
- *   get:
- *     summary: Get recipes created by the current user
- *     tags: [Recipes]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: A list of recipes created by the authenticated user
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Recipe'
- *       401:
- *         description: Unauthorized (no or invalid JWT)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Internal server error
- */
-router.get("/own", auth, getOwnRecipes);
 
 /**
  * @swagger
@@ -463,5 +497,8 @@ router.post("/:id/favorite", auth, addToFavorites);
  *         description: Internal server error
  */
 router.delete("/:id/favorite", auth, removeFromFavorites);
+
+
+
 
 export default router;

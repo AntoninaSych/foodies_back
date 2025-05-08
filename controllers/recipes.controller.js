@@ -164,7 +164,7 @@ export const getAllRecipes = async (req, res, next) => {
                     page: Number(page),
                     totalPages: 0,
                     limit: Number(limit),
-                    recipes: [],
+                    items: [],
                 });
             }
         }
@@ -185,7 +185,7 @@ export const getAllRecipes = async (req, res, next) => {
                     page: Number(page),
                     totalPages: 0,
                     limit: Number(limit),
-                    recipes: [],
+                    items: [],
                 });
             }
         }
@@ -205,7 +205,7 @@ export const getAllRecipes = async (req, res, next) => {
                     page: Number(page),
                     totalPages: 0,
                     limit: Number(limit),
-                    recipes: [],
+                    items: [],
                 });
             }
 
@@ -238,7 +238,7 @@ export const getAllRecipes = async (req, res, next) => {
         const totalPages = Math.ceil(count / Number(limit));
 
         // Формуємо результат з деталями без ID
-        const recipes = rows.map((recipe) => ({
+        const items = rows.map((recipe) => ({
             id: recipe.id,
             title: recipe.title,
             preview: recipe.preview,
@@ -263,7 +263,7 @@ export const getAllRecipes = async (req, res, next) => {
             page: Number(page),
             totalPages,
             limit: Number(limit),
-            recipes,
+            items,
         });
     } catch (err) {
         next(HttpError(500, err.message));

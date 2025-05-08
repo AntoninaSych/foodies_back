@@ -4,48 +4,6 @@ import { Sequelize } from 'sequelize';
 import fs from 'fs/promises';
 import path from 'path';
 
-export const getAllRecipes = async (req, res, next) => {
-    try {
-        const { page = 1, limit = 10 } = req.query;
-        const offset = (page - 1) * limit;
-
-        const options = {
-            include: [
-                {
-                    model: Area,
-                    as: 'area',
-                    attributes: ['id', 'name'],
-                },
-                {
-                    model: User,
-                    as: 'owner',
-                    attributes: ['id', 'name', 'email'],
-                },
-                {
-                    model: Category,
-                    as: 'category',
-                    attributes: ['id', 'name', 'thumb'],
-                },
-            ],
-            offset,
-            limit: parseInt(limit),
-            order: [['createdAt', 'DESC']],
-        };
-
-        if (req.user) {
-            options.where = { ownerId: req.user.id };
-        }
-
-
-        const recipes = await Recipe.findAll(options);
-
-
-        res.json(recipes);
-    } catch (error) {
-        next(HttpError(500, error.message));
-    }
-};
-
 export const getRecipeById = async (req, res, next) => {
     try {
         const { id } = req.params;
@@ -70,6 +28,7 @@ export const getRecipeById = async (req, res, next) => {
                 },
                 {
                     model: Ingredient,
+                    as: 'ingredients',
                     attributes: ['id', 'name', 'thumb'],
                     through: { attributes: ['measure'] },
                 },
@@ -165,125 +124,152 @@ export const deleteOwnRecipe = async (req, res, next) => {
     }
 };
 
-export const searchRecipes = async (req, res, next) => {
-  try {
-    const { category, ingredient, area, page = 1, limit = 10 } = req.query;
-    const offset = (Number(page) - 1) * Number(limit);
+export const getAllRecipes = async (req, res, next) => {
+    try {
+        const { category, ingredient, area, page = 1, limit = 10 } = req.query;
+        const offset = (Number(page) - 1) * Number(limit);
 
-    const where = {};
-    const include = [
-      {
-        model: Category,
-        as: "category",
-        attributes: ["id", "name"],
-      },
-      {
-        model: Area,
-        as: "area",
-        attributes: ["id", "name"],
-      },
-    ];
+        const where = {};
+        const include = [
+            {
+                model: Category,
+                as: "category",
+                attributes: ["name"], // тільки назва
+            },
+            {
+                model: Area,
+                as: "area",
+                attributes: ["name"],
+            },
+            {
+                model: User,
+                as: "owner",
+                attributes: ["name", "avatarURL", "id"],
+            },
+        ];
 
-    // Пошук по назві категорії (нижній регістр)
-    if (category) {
-      const foundCategory = await Category.findOne({
-        where: Sequelize.where(
-          Sequelize.fn("LOWER", Sequelize.col("name")),
-          category.toLowerCase()
-        ),
-      });
-      if (foundCategory) {
-        where.categoryId = foundCategory.id;
-      } else {
-        return res.json({
-          total: 0,
-          page: Number(page),
-          totalPages: 0,
-          limit: Number(limit),
-          recipes: [],
+        // Пошук по назві категорії (нижній регістр)
+        if (category) {
+            const foundCategory = await Category.findOne({
+                where: Sequelize.where(
+                    Sequelize.fn("LOWER", Sequelize.col("name")),
+                    category.toLowerCase()
+                ),
+            });
+            if (foundCategory) {
+                where.categoryId = foundCategory.id;
+            } else {
+                return res.json({
+                    total: 0,
+                    page: Number(page),
+                    totalPages: 0,
+                    limit: Number(limit),
+                    recipes: [],
+                });
+            }
+        }
+
+        // Пошук по назві регіону (area)
+        if (area) {
+            const foundArea = await Area.findOne({
+                where: Sequelize.where(
+                    Sequelize.fn("LOWER", Sequelize.col("name")),
+                    area.toLowerCase()
+                ),
+            });
+            if (foundArea) {
+                where.areaId = foundArea.id;
+            } else {
+                return res.json({
+                    total: 0,
+                    page: Number(page),
+                    totalPages: 0,
+                    limit: Number(limit),
+                    recipes: [],
+                });
+            }
+        }
+
+        // Пошук по інгредієнту (назва, нижній регістр)
+        if (ingredient) {
+            const foundIngredient = await Ingredient.findOne({
+                where: Sequelize.where(
+                    Sequelize.fn("LOWER", Sequelize.col("name")),
+                    ingredient.toLowerCase()
+                ),
+            });
+
+            if (!foundIngredient) {
+                return res.json({
+                    total: 0,
+                    page: Number(page),
+                    totalPages: 0,
+                    limit: Number(limit),
+                    recipes: [],
+                });
+            }
+
+            include.push({
+                model: Ingredient,
+                as: "ingredients",
+                where: { id: foundIngredient.id },
+                attributes: ["id", "name", "thumb"],
+                through: { attributes: [] },
+                required: true,
+            });
+        } else {
+            include.push({
+                model: Ingredient,
+                as: "ingredients",
+                attributes: ["id", "name", "thumb"],
+                through: { attributes: [] },
+            });
+        }
+
+        const { count, rows } = await Recipe.findAndCountAll({
+            where,
+            include,
+            distinct: true,
+            offset,
+            limit: Number(limit),
+            order: [["createdAt", "DESC"]],
         });
-      }
-    }
 
-    // Пошук по назві регіону (area)
-    if (area) {
-      const foundArea = await Area.findOne({
-        where: Sequelize.where(
-          Sequelize.fn("LOWER", Sequelize.col("name")),
-          area.toLowerCase()
-        ),
-      });
-      if (foundArea) {
-        where.areaId = foundArea.id;
-      } else {
-        return res.json({
-          total: 0,
-          page: Number(page),
-          totalPages: 0,
-          limit: Number(limit),
-          recipes: [],
+        const totalPages = Math.ceil(count / Number(limit));
+
+        // Формуємо результат з деталями без ID
+        const recipes = rows.map((recipe) => ({
+            id: recipe.id,
+            title: recipe.title,
+            preview: recipe.preview,
+            instructions: recipe.instructions,
+            time: recipe.time,
+            createdAt: recipe.createdAt,
+            updatedAt: recipe.updatedAt,
+            area: recipe.area?.name || null,
+            category: recipe.category?.name || null,
+            owner: recipe.owner
+                ? {
+                    name: recipe.owner.name,
+                    avatarURL: recipe.owner.avatarURL,
+                    id: recipe.owner.id,
+                }
+                : null,
+            ingredients: recipe.ingredients || [],
+        }));
+
+        res.json({
+            total: count,
+            page: Number(page),
+            totalPages,
+            limit: Number(limit),
+            recipes,
         });
-      }
+    } catch (err) {
+        next(HttpError(500, err.message));
     }
-
-    // Пошук по інгредієнту (назва, нижній регістр)
-    if (ingredient) {
-      const foundIngredient = await Ingredient.findOne({
-        where: Sequelize.where(
-          Sequelize.fn("LOWER", Sequelize.col("name")),
-          ingredient.toLowerCase()
-        ),
-      });
-
-      if (!foundIngredient) {
-        return res.json({
-          total: 0,
-          page: Number(page),
-          totalPages: 0,
-          limit: Number(limit),
-          recipes: [],
-        });
-      }
-
-      include.push({
-        model: Ingredient,
-        as: "ingredients",
-        where: { id: foundIngredient.id },
-        attributes: ["id", "name", "thumb"],
-        through: { attributes: [] },
-        required: true,
-      });
-    } else {
-      include.push({
-        model: Ingredient,
-        as: "ingredients",
-        attributes: ["id", "name", "thumb"],
-        through: { attributes: [] },
-      });
-    }
-
-    const { count, rows } = await Recipe.findAndCountAll({
-      where,
-      include,
-      distinct: true,
-      offset,
-      limit: Number(limit),
-      order: [["createdAt", "DESC"]],
-    });
-
-    const totalPages = Math.ceil(count / Number(limit));
-
-    res.json({
-      total: count,
-      page: Number(page),
-      totalPages,
-      limit: Number(limit),
-      recipes: rows,
-    });
-  } catch (err) {
-    next(HttpError(500, err.message));
-  }
 };
+
 
 export const getOwnRecipes = async (req, res, next) => {
   return getAllRecipes(req, res, next);

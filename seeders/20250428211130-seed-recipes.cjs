@@ -46,11 +46,11 @@ module.exports = {
       if (recipe.thumb) {
         try {
           const filename = path.basename(new URL(recipe.thumb).pathname);
-          const localPath = path.join(imagesDir, filename);
-
+          const sanitized = decodeURI(filename).replace(/ /g, '_');
+          const localPath = path.join(imagesDir, sanitized);
           if (!fs.existsSync(localPath)) {
             const response = await axios({
-              url: encodeURI(recipe.thumb),
+              url: recipe.thumb,
               method: 'GET',
               responseType: 'stream',
             });
@@ -63,13 +63,13 @@ module.exports = {
             });
           }
 
-          thumb = `http://${host}:${port}/public/images/recipies/${filename}`;
+          thumb = `http://${host}:${port}/public/images/recipies/${sanitized}`;
         } catch (e) {
           console.warn(`⚠️ Could not download image: ${recipe.thumb}`);
-          thumb = `http://${host}:${port}/public/images/recipies/default.jpg`;
+          thumb = `http://${host}:${port}/public/images/recipies/default.png`;
         }
       } else {
-        thumb = `http://${host}:${port}/public/images/recipies/default.jpg`;
+        thumb = `http://${host}:${port}/public/images/recipies/default.png`;
       }
 
       recipesMap.push({ title: recipe.title.trim(), newId: id });
@@ -104,5 +104,22 @@ module.exports = {
 
   async down(queryInterface) {
     await queryInterface.bulkDelete('recipes', null, {});
+
+    const dir = path.resolve(__dirname, '../public/images/recipies');
+
+    if (!fs.existsSync(dir)) return;
+
+    const files = fs.readdirSync(dir);
+    for (const file of files) {
+      if (file !== 'default.png') {
+        const fullPath = path.join(dir, file);
+        console.log(fullPath);
+        try {
+          fs.unlinkSync(fullPath);
+        } catch (err) {
+          console.warn(`Could not delete file: ${fullPath}`, err);
+        }
+      }
+    }
   }
 };

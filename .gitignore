@@ -21,11 +21,11 @@ coverage/
 tmp/
 temp/
 postgres_data/
+public/images/recipies/*
+# except default recipe img
+!public/images/recipies/default.png
 # all avatars
-public/images/avatars/* 
-# except default avatar
+public/images/avatars/*
+# except default avatars
+!public/images/avatars/admin.jpeg
 !public/images/avatars/default.png
-
-
-
-

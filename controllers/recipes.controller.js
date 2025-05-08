@@ -248,6 +248,7 @@ export const getAllRecipes = async (req, res, next) => {
             updatedAt: recipe.updatedAt,
             area: recipe.area?.name || null,
             category: recipe.category?.name || null,
+            thumb: recipe.thumb,
             owner: recipe.owner
                 ? {
                     name: recipe.owner.name,

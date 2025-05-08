@@ -1,7 +1,6 @@
 'use strict';
 
 const recipesDataRaw = require('../db/source/recipes.json');
-const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const fsp = require('fs/promises');
 const path = require('path');
@@ -13,14 +12,6 @@ const imagesDir = path.resolve(__dirname, '../public/images/recipies');
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const [user] = await queryInterface.sequelize.query(
-        'SELECT id FROM users LIMIT 1',
-        { type: Sequelize.QueryTypes.SELECT }
-    );
-
-    if (!user) throw new Error('❌ No users found. Please seed users first.');
-    const ownerId = user.id;
-
     const areas = await queryInterface.sequelize.query(
         'SELECT id, name FROM areas',
         { type: Sequelize.QueryTypes.SELECT }
@@ -40,7 +31,8 @@ module.exports = {
     const recipesMap = [];
 
     for (const recipe of recipesDataRaw) {
-      const id = uuidv4();
+      const id = recipe.id;
+      const ownerId = recipe.owner;
       const areaId = recipe.area ? areaMap[recipe.area.toLowerCase().trim()] || null : null;
       const categoryId = recipe.category ? categoryMap[recipe.category.toLowerCase().trim()] || null : null;
 

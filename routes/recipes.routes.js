@@ -384,7 +384,7 @@ router.post("/:id/favorite", auth, addToFavorites);
 
 /**
  * @swagger
- * /api/recipes/{id}/unfavorite:
+ * /api/recipes/{id}/favorite:
  *   delete:
  *     summary: Remove a recipe from favorites
  *     tags: [Recipes]

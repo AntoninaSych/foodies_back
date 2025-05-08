@@ -243,6 +243,7 @@ export const getAllRecipes = async (req, res, next) => {
             title: recipe.title,
             preview: recipe.preview,
             instructions: recipe.instructions,
+            description: recipe.description,
             time: recipe.time,
             createdAt: recipe.createdAt,
             updatedAt: recipe.updatedAt,

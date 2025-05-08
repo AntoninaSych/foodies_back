@@ -132,6 +132,36 @@ router.get("/current_details", auth, getCurrentUserInfo);
 
 router.patch("/avatars", auth, upload.single("avatar"), changeAvatar);
 
+
+/**
+ * @swagger
+ * /api/users/current:
+ *   get:
+ *     summary: Get current logged-in user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 name:
+ *                   type: string
+ *                 avatarURL:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/current", auth, getCurrent);
+
 /**
  * @swagger
  * /api/users/{id}:
@@ -452,32 +482,4 @@ router.post("/login", login);
  */
 router.post("/logout", auth, logout);
 
-/**
- * @swagger
- * /api/users/current:
- *   get:
- *     summary: Get current logged-in user
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Current user data
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 email:
- *                   type: string
- *                 name:
- *                   type: string
- *                 avatarURL:
- *                   type: string
- *       401:
- *         description: Unauthorized
- */
-router.get("/current", auth, getCurrent);
 export default router;

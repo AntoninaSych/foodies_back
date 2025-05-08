@@ -40,19 +40,16 @@ export const register = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const gravatarUrl = gravatar.url(email, { s: "250", d: "retro" }, true); // true = https
-
+    const gravatarUrl = gravatar.url(email, { s: "250", d: "retro" }, true);
     const avatarFilename = `${uuidv4()}.jpg`;
     const avatarPath = path.join(AVATARS_DIR, avatarFilename);
 
     const response = await axios.get(gravatarUrl, { responseType: 'arraybuffer' });
+    await fs.mkdir(AVATARS_DIR, { recursive: true });
     await fs.writeFile(avatarPath, response.data);
 
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.PORT || 3000;
-    const imagesDir = path.resolve('images', 'avatars');
-
-    await fs.mkdir(imagesDir, { recursive: true });
     const avatarURL = `http://${host}:${port}/public/images/avatars/${avatarFilename}`;
 
     const newUser = await User.create({
@@ -62,8 +59,15 @@ export const register = async (req, res, next) => {
       avatarURL,
     });
 
+    const payload = { id: newUser.id };
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "24h" });
+
+    await newUser.update({ token });
+
     res.status(201).json({
+      token,
       user: {
+        id: newUser.id,
         name: newUser.name,
         email: newUser.email,
         avatarURL: newUser.avatarURL,

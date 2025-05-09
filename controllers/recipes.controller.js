@@ -39,11 +39,22 @@ export const getRecipeById = async (req, res, next) => {
             return next(HttpError(404, 'Recipe not found'));
         }
 
-        res.json(recipe);
+        const transformedRecipe = {
+            ...recipe.toJSON(),
+            ingredients: recipe.ingredients.map(ingredient => ({
+                id: ingredient.id,
+                name: ingredient.name,
+                thumb: ingredient.thumb,
+                measure: ingredient.RecipeIngredient?.measure || null,
+            })),
+        };
+
+        res.json(transformedRecipe);
     } catch (error) {
         next(HttpError(500, error.message));
     }
 };
+
 
 export const createRecipe = async (req, res, next) => {
     try {

@@ -337,6 +337,7 @@ export const getFavorites = async (req, res, next) => {
 export const getPopular = async (_, res, next) => {
   try {
     const popularRecipes = await Recipe.findAll({
+        subQuery: false,
       attributes: {
         include: [
           [
@@ -356,6 +357,7 @@ export const getPopular = async (_, res, next) => {
       group: ["Recipe.id"],
       having: Sequelize.literal('COUNT("favorited"."id") > 0'),
       order: [[Sequelize.fn("COUNT", Sequelize.col("favorited.id")), "DESC"]],
+      limit: 4,
     });
 
     res.json(popularRecipes);

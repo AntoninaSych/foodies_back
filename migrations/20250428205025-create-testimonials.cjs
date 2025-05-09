@@ -12,6 +12,16 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false,
       },
+      owner: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: 'users',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
+      },
     });
   },
 

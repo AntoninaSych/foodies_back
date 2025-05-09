@@ -10,7 +10,17 @@ const Testimonial = sequelize.define('Testimonial', {
     testimonial: {
         type: DataTypes.TEXT,
         allowNull: false,
-    }
+    },
+    owner: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+            model: 'users',
+            key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+    },
 }, {
     timestamps: false,
     tableName: 'testimonials',

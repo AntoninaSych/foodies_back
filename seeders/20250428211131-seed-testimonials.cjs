@@ -8,6 +8,7 @@ module.exports = {
     const testimonialsData = testimonials.map(testimonial => ({
       id: uuidv4(),
       testimonial: testimonial.testimonial,
+      owner: testimonial.owner,
     }));
 
     await queryInterface.bulkInsert('testimonials', testimonialsData, {});

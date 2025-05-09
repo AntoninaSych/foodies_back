@@ -63,6 +63,8 @@ Recipe.belongsToMany(User, {
   foreignKey: "recipeId",
   otherKey: "userId",
 });
+User.hasMany(Testimonial, { foreignKey: 'owner', as: 'testimonials' });
+Testimonial.belongsTo(User, { foreignKey: 'owner', as: 'user' });
 
 export {
   sequelize,

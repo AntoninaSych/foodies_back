@@ -86,8 +86,6 @@ router.get("/", getAllRecipes);
  *   get:
  *     summary: Get popular recipes
  *     tags: [Recipes]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of popular recipes
@@ -314,7 +312,7 @@ router.post("/", auth, upload.single("thumb"), createRecipe);
  * @swagger
  * /api/recipes/{id}:
  *   delete:
- *     summary: Удалить собственный рецепт
+ *     summary: Delete own recipe
  *     tags: [Recipes]
  *     security:
  *       - bearerAuth: []
@@ -322,19 +320,19 @@ router.post("/", auth, upload.single("thumb"), createRecipe);
  *       - in: path
  *         name: id
  *         required: true
- *         description: Идентификатор рецепта для удаления
+ *         description: Identifier of the recipe to delete
  *         schema:
  *           type: string
  *           format: uuid
  *     responses:
  *       204:
- *         description: Рецепт успешно удалён
+ *         description: Recipe successfully deleted
  *       403:
- *         description: Доступ запрещён. Пользователь не является владельцем рецепта.
+ *         description: Access denied. The user is not the owner of the recipe.
  *       404:
- *         description: Рецепт не найден
+ *         description: Recipe not found
  *       500:
- *         description: Внутренняя ошибка сервера
+ *         description: Internal server error
  */
 router.delete("/:id", auth, deleteOwnRecipe);
 

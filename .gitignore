@@ -1,35 +1,31 @@
 node_modules/
 .env
-
+.env_prod
 # Sequelize files
 /migrations/*.js~
 /seeders/*.js~
 /models/*.js~
 /db/source/usersIdMap.json
-
 *.sqlite
 *.db
-
-
 logs
 *.log
-
-
 docker-compose.override.yml
 docker-compose.yml~
 Dockerfile~
-
-
 .vscode/
 .idea/
 .DS_Store
-
-
 swagger/swagger-output.json
-
-
 coverage/
-
-
 tmp/
 temp/
+postgres_data/
+public/images/recipies/*
+# except default recipe img
+!public/images/recipies/default.png
+# all avatars
+public/images/avatars/*
+# except default avatars
+!public/images/avatars/admin.jpeg
+!public/images/avatars/default.png

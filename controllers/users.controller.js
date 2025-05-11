@@ -184,8 +184,31 @@ export const getUserFollowers = async (req, res, next) => {
 
 export const followers = async (req, res, next) => {
   try {
-    const followers = await req.user.getFollowers();
-    res.json(followers);
+    const followers = await req.user.getFollowers({
+      include: [
+        {
+          model: Recipe,
+          as: 'recipes',
+          attributes: ['id', 'title', 'thumb'],
+          limit: 4,
+        }
+      ]
+    });
+
+    const enrichedFollowers = await Promise.all(
+        followers.map(async follower => {
+          const recipeCount = await Recipe.count({
+            where: { ownerId: follower.id },
+          });
+
+          return {
+            ...follower.toJSON(),
+            allRecipes: recipeCount
+          };
+        })
+    );
+
+    res.json(enrichedFollowers);
   } catch (err) {
     next(err.status ? err : HttpError(500, err.message));
   }
@@ -193,12 +216,36 @@ export const followers = async (req, res, next) => {
 
 export const following = async (req, res, next) => {
   try {
-    const followings = await req.user.getFollowings();
-    res.json(followings);
+    const followings = await req.user.getFollowings({
+      include: [
+        {
+          model: Recipe,
+          as: 'recipes',
+          attributes: ['id', 'title', 'thumb'],
+          limit: 4,
+        }
+      ]
+    });
+
+    const enrichedFollowings = await Promise.all(
+        followings.map(async user => {
+          const recipeCount = await Recipe.count({
+            where: { ownerId: user.id },
+          });
+
+          return {
+            ...user.toJSON(),
+            allRecipes: recipeCount
+          };
+        })
+    );
+
+    res.json(enrichedFollowings);
   } catch (err) {
     next(err.status ? err : HttpError(500, err.message));
   }
 };
+
 
 export const getCurrent = async (req, res) => {
   const { id, name, email, avatarURL } = req.user;

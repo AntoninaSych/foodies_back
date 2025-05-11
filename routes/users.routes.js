@@ -372,6 +372,14 @@ router.get("/:id", auth, getUserInfo);
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID of the user
  *     responses:
  *       200:
  *         description: A list of users who follow the user

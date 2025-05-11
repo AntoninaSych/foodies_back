@@ -7,7 +7,9 @@ const path = require('path');
 const axios = require('axios');
 
 const host = process.env.HOST || 'localhost';
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || '';
+const baseUrl = port ? `http://${host}:${port}` : `http://${host}`;
+
 const imagesDir = path.resolve(__dirname, '../public/images/recipies');
 
 module.exports = {
@@ -63,13 +65,13 @@ module.exports = {
             });
           }
 
-          thumb = `http://${host}:${port}/public/images/recipies/${sanitized}`;
+          thumb = `${baseUrl}/public/images/recipies/${sanitized}`;
         } catch (e) {
           console.warn(`⚠️ Could not download image: ${recipe.thumb}`);
-          thumb = `http://${host}:${port}/public/images/recipies/default.png`;
+          thumb = `${baseUrl}/public/images/recipies/default.png`;
         }
       } else {
-        thumb = `http://${host}:${port}/public/images/recipies/default.png`;
+        thumb = `${baseUrl}/public/images/recipies/default.png`;
       }
 
       recipesMap.push({ title: recipe.title.trim(), newId: id });

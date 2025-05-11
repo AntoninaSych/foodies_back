@@ -6,8 +6,10 @@ const bcrypt = require("bcryptjs");
 const { v4: uuidv4 } = require("uuid");
 
 require("dotenv").config();
-const host = process.env.DB_HOST || "localhost";
-const port = process.env.PORT || 3000;
+const host = process.env.HOST || "localhost";
+const port = process.env.PORT || '';
+const baseUrl = port ? `http://${host}:${port}` : `http://${host}`;
+
 
 module.exports = {
   async up(queryInterface) {
@@ -27,8 +29,8 @@ module.exports = {
         password: await bcrypt.hash("password123", 10),
         avatarURL:
           user.name === "Foodies Admin"
-            ? `http://${host}:${port}/public/images/avatars/admin.jpeg`
-            : `http://${host}:${port}/public/images/avatars/default.png`,
+            ? `${baseUrl}/public/images/avatars/admin.jpeg`
+            : `${baseUrl}/public/images/avatars/default.png`,
         token: user.token,
         createdAt: now,
         updatedAt: now,

@@ -152,31 +152,31 @@ export const getUserFollowers = async (req, res, next) => {
     }
 
     const followers = await target.getFollowers({
-      attributes: ['id', 'name', 'email'], // добавь нужные поля
       include: [
         {
           model: Recipe,
           as: 'recipes',
           attributes: ['id', 'title', 'thumb'],
           limit: 4,
-        },
-      ],
+        }
+      ]
     });
 
-    const followersWithRecipeCount = await Promise.all(
+    const followersWithCounts = await Promise.all(
         followers.map(async follower => {
           const recipeCount = await Recipe.count({
             where: { ownerId: follower.id },
           });
 
+          const jsonFollower = follower.toJSON();
           return {
-            ...follower.toJSON(),
-            allRecipes: recipeCount,
+            ...jsonFollower,
+            allRecipes: recipeCount
           };
         })
     );
 
-    res.json(followersWithRecipeCount);
+    res.json(followersWithCounts);
   } catch (err) {
     next(err.status ? err : HttpError(500, err.message));
   }

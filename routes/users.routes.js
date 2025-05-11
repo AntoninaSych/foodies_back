@@ -30,6 +30,8 @@ const router = Router();
  *   get:
  *     summary: Get all users
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of all users
@@ -48,6 +50,8 @@ const router = Router();
  *                     type: string
  *                   avatar:
  *                     type: string
+ *       401:
+ *         description: Unauthorized
  */
 
 router.get("/", auth, getAllUsers);

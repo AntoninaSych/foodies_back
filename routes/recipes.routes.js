@@ -44,6 +44,12 @@ const router = Router();
  *         schema:
  *           type: string
  *         description: Filter by area name (case-insensitive)
+*       - in: query
+ *         name: owner
+ *         schema:
+ *           type: string
+ *           default: ""
+ *         description: Filter by owner ID
  *       - in: query
  *         name: page
  *         schema:

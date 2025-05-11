@@ -137,7 +137,7 @@ export const deleteOwnRecipe = async (req, res, next) => {
 
 export const getAllRecipes = async (req, res, next) => {
     try {
-        const { category, ingredient, area, page = 1, limit = 10 } = req.query;
+        const { category, ingredient, area, page = 1, limit = 10, owner = "" } = req.query;
         const offset = (Number(page) - 1) * Number(limit);
 
         const where = {};
@@ -159,8 +159,8 @@ export const getAllRecipes = async (req, res, next) => {
             },
         ];
 
-        if (req.user) {
-          where.ownerId = req.user.id;
+        if (owner !== "") {
+          where.ownerId = owner;
         }
 
         // Пошук по назві категорії (нижній регістр)
@@ -289,6 +289,7 @@ export const getAllRecipes = async (req, res, next) => {
 
 
 export const getOwnRecipes = async (req, res, next) => {
+  req.query.owner = req.user.id;
   return getAllRecipes(req, res, next);
 }
 

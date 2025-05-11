@@ -65,7 +65,6 @@ export const getUserInfo = async (req, res, next) => {
         avatarURL,
       },
       createdRecipes,
-      favorites: favorites.length,
       followers: followers.length,
     });
   } catch (err) {

@@ -159,6 +159,10 @@ export const getAllRecipes = async (req, res, next) => {
             },
         ];
 
+        if (req.user) {
+          where.ownerId = req.user.id;
+        }
+
         // Пошук по назві категорії (нижній регістр)
         if (category) {
             const foundCategory = await Category.findOne({

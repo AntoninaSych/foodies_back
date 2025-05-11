@@ -8,6 +8,7 @@ import {
   unfollowUser,
   getCurrent,
   changeAvatar,
+  getUserFollowers,
   followers,
   following,
 } from "../controllers/users.controller.js";
@@ -132,7 +133,6 @@ router.get("/current_details", auth, getCurrentUserInfo);
 
 router.patch("/avatars", auth, upload.single("avatar"), changeAvatar);
 
-
 /**
  * @swagger
  * /api/users/current:
@@ -161,55 +161,6 @@ router.patch("/avatars", auth, upload.single("avatar"), changeAvatar);
  *         description: Unauthorized
  */
 router.get("/current", auth, getCurrent);
-
-/**
- * @swagger
- * /api/users/{id}:
- *   get:
- *     summary: Get user info
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: ID of the user to follow
- *     responses:
- *       200:
- *         description: Object User
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                     name:
- *                       type: string
- *                     email:
- *                       type: string
- *                     avatar:
- *                       type: string
- *                 createdRecipes:
- *                   type: integer
- *                 favorites:
- *                   type: integer
- *                 followers:
- *                    type: integer
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: User not found
- */
-
-router.get("/:id", auth, getUserInfo);
 
 /**
  * @swagger
@@ -359,6 +310,87 @@ router.get("/followers", auth, followers);
  *               $ref: '#/components/schemas/Error'
  */
 router.get("/following", auth, following);
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: Get user info
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: ID of the user to follow
+ *     responses:
+ *       200:
+ *         description: Object User
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     avatar:
+ *                       type: string
+ *                 createdRecipes:
+ *                   type: integer
+ *                 favorites:
+ *                   type: integer
+ *                 followers:
+ *                    type: integer
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User not found
+ */
+
+router.get("/:id", auth, getUserInfo);
+
+/**
+ * @swagger
+ * /api/users/{id}/followers:
+ *   get:
+ *     summary: Get user's followers
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of users who follow the user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Unauthorized (no or invalid JWT)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/:id/followers", auth, getUserFollowers);
 
 /**
  * @swagger

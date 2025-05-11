@@ -142,6 +142,22 @@ export const changeAvatar = async (req, res, next) => {
   }
 };
 
+export const getUserFollowers = async (req, res, next) => {
+  try {
+    const { id: userId } = req.params;
+
+    const target = await User.findByPk(userId);
+    if (!target) {
+      throw HttpError(404, "User not found");
+    }
+
+    const followers = await target.getFollowers();
+    res.json(followers);
+  } catch (err) {
+    next(err.status ? err : HttpError(500, err.message));
+  }
+};
+
 export const followers = async (req, res, next) => {
   try {
     const followers = await req.user.getFollowers();

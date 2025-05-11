@@ -55,7 +55,6 @@ export const getRecipeById = async (req, res, next) => {
     }
 };
 
-
 export const createRecipe = async (req, res, next) => {
     try {
         const {
@@ -113,7 +112,6 @@ export const createRecipe = async (req, res, next) => {
         next(HttpError(500, error.message));
     }
 };
-
 
 export const deleteOwnRecipe = async (req, res, next) => {
     try {
@@ -286,7 +284,6 @@ export const getAllRecipes = async (req, res, next) => {
         next(HttpError(500, err.message));
     }
 };
-
 
 export const getOwnRecipes = async (req, res, next) => {
   req.query.owner = req.user.id;

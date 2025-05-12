@@ -76,14 +76,15 @@ export const createRecipe = async (req, res, next) => {
         let thumbPath = null;
         if (req.file) {
             const { path: oldPath, filename } = req.file;
-            const imagesDir = path.resolve('public', 'images', 'recipies');            const newPath = path.join(imagesDir, filename);
+            const imagesDir = path.resolve('public', 'images', 'recipies');
+            const newPath = path.join(imagesDir, filename);
 
             await fs.mkdir(imagesDir, { recursive: true });
 
             await fs.rename(oldPath, newPath);
             const host = process.env.HOST || "localhost";
             const port = process.env.PORT || '';
-            const baseUrl = port ? `${host}:${port}` : `${host}`;
+            const baseUrl = (env.NODE_ENV && env.NODE_ENV === 'production') ? `${host}` : `${host}:${port}`;
             thumbPath = `${baseUrl}/public/images/recipies/${filename}`;
         }
 

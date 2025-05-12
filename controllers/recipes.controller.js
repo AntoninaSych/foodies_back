@@ -84,7 +84,7 @@ export const createRecipe = async (req, res, next) => {
             await fs.rename(oldPath, newPath);
             const host = process.env.HOST || "localhost";
             const port = process.env.PORT || '';
-            const baseUrl = (env.NODE_ENV && env.NODE_ENV === 'production') ? `${host}` : `${host}:${port}`;
+            const baseUrl = (process.env.NODE_ENV && process.env.NODE_ENV === 'production') ? `${host}` : `${host}:${port}`;
             thumbPath = `${baseUrl}/public/images/recipies/${filename}`;
         }
 
